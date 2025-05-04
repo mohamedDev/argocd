@@ -115,3 +115,11 @@ mkdir -p apps/new-service/dev
 - Multi-env and multi-service management at scale
 
 ---
+
+---
+
+## 🚀 Bootstrap ArgoCD Root Application
+
+```bash
+$ kubectl apply -f root-app.yaml
+```
