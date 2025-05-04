@@ -1,6 +1,0 @@
-namespace: triton
-
-resources:
-  - deployment.yaml
-  - service.yaml
-  # - ingress.yaml  # si tu veux exposer le service à l'extérieur du cluster
