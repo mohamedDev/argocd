@@ -12,7 +12,7 @@ spec:
           - path: apps/*/* # => toutes les combinaisons apps/service/env
   template:
     metadata:
-      name: "{{path.basename}}-{{path[1]}}" # Ex: dev-users-service
+      name: "{{path[1]}}-{{path.basename}}" # Ex: users-service-dev
     spec:
       project: default
       source:
