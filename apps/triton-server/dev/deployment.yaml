@@ -22,6 +22,4 @@ spec:
             - containerPort: 8000 # HTTP
             - containerPort: 8001 # gRPC
             - containerPort: 8002 # Metrics
-          volumeMounts:
-            - name: model-volume
-              mountPath: /models
+
