@@ -1,22 +1,31 @@
 apiVersion: argoproj.io/v1alpha1
-kind: Application
+kind: ApplicationSet
 metadata:
-  name: apps-root
+  name: microservices-apps
   namespace: argocd
 spec:
-  project: default
-  source:
-    repoURL: https://github.com/mohamedDev/argocd.git
-    targetRevision: HEAD
-    path: apps
-    directory:
-      recurse: true
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: default
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
+  generators:
+    - git:
+        repoURL: https://github.com/mohamedDev/argocd.git
+        revision: main
+        directories:
+          - path: apps/*/* # => toutes les combinaisons apps/service/env
+  template:
+    metadata:
+      name: "{{path.basename}}-{{path[1]}}" # Ex: dev-users-service
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/ton-org/repo-git.git
+        targetRevision: main
+        path: "{{path}}" # Ex: apps/users-service/dev
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{path[1]}}-{{path.basename}}' # Ex: users-service-dev
+      syncPolicy: 
+        automated:  # Synchronisation automatique
+          prune: true # Supprime les ressources qui ne sont plus dans le repo git
+          selfHeal: true # Répare les ressources qui ne sont plus synchronisées
+        syncOptions:
+          - CreateNamespace=true # Crée le namespace si il n'existe pas
+          - ApplyOutOfSyncOnly=true # Applique uniquement les ressources qui ne sont pas synchronisées
