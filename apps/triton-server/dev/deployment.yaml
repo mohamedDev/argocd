@@ -25,10 +25,3 @@ spec:
           volumeMounts:
             - name: model-volume
               mountPath: /models
-          resources:
-            limits:
-              nvidia.com/gpu: 1 # Enlever si tu n'utilises pas de GPU
-      volumes:
-        - name: model-volume
-          persistentVolumeClaim:
-            claimName: triton-models-pvc
