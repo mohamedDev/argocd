@@ -16,7 +16,7 @@ spec:
     spec:
       project: default
       source:
-        repoURL: https://github.com/ton-org/repo-git.git
+        repoURL: https://github.com/mohamedDev/argocd.git
         targetRevision: main
         path: "{{path}}" # Ex: apps/users-service/dev
       destination:
