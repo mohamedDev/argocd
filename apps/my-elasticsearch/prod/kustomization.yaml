@@ -1,5 +1,5 @@
 resources:
-  - PersistentVolumeClaim.yaml
+  #- PersistentVolumeClaim.yaml
   - configmap.yaml
   - deployment-elasticsearch.yaml
   - deployment-exporter.yaml
