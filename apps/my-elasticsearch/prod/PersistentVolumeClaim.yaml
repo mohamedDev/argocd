@@ -1,7 +1,8 @@
+# PVC SANS storageClassName
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: elasticsearch-data-claim
+  name: elasticsearch-data
 spec:
   accessModes:
     - ReadWriteOnce
