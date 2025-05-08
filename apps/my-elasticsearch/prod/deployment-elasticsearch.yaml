@@ -1,0 +1,55 @@
+# Elasticsearch Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: elasticsearch
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: elasticsearch
+  template:
+    metadata:
+      labels:
+        app: elasticsearch
+    spec:
+      containers:
+        - name: elasticsearch
+          image: docker.elastic.co/elasticsearch/elasticsearch:8.7.1
+          ports:
+            - containerPort: 9200
+            - containerPort: 9300
+          env:
+            - name: CLI_JAVA_OPTS
+              value: "-Xms2g -Xmx2g"
+            - name: bootstrap.memory_lock
+              value: "true"
+            - name: discovery.type
+              value: "single-node"
+            - name: xpack.security.enabled
+              value: "false"
+            - name: xpack.security.enrollment.enabled
+              value: "false"
+          volumeMounts:
+            - name: data
+              mountPath: /usr/share/elasticsearch/data
+            - name: config
+              mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
+              subPath: elasticsearch.yml
+          resources:
+            limits:
+              memory: "4Gi"
+              cpu: "2"
+            requests:
+              memory: "2Gi"
+              cpu: "1"
+          securityContext:
+            capabilities:
+              add: ["IPC_LOCK"]
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: elasticsearch-data
+        - name: config
+          configMap:
+            name: elasticsearch-config

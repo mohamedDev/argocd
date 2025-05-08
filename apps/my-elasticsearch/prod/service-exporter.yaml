@@ -1,0 +1,12 @@
+# Exporter Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: elasticsearch-exporter
+spec:
+  selector:
+    app: elasticsearch-exporter
+  ports:
+    - name: metrics
+      port: 9114
+      targetPort: 9114
