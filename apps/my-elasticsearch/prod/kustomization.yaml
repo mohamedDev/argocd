@@ -1,10 +1,10 @@
-resources:
-  - PersistentVolume.yaml
-  - PersistentVolumeClaim.yaml
-  - configmap.yaml
-  - deployment-elasticsearch.yaml
-  - deployment-exporter.yaml
-  - service-exporter.yaml
-  - service-elasticsearch.yaml
+# resources:
+#   - PersistentVolume.yaml
+#   - PersistentVolumeClaim.yaml
+#   - configmap.yaml
+#   - deployment-elasticsearch.yaml
+#   - deployment-exporter.yaml
+#   - service-exporter.yaml
+#   - service-elasticsearch.yaml
 
-    # - ingress.yaml  # si tu veux exposer le service à l'extérieur du cluster
+#     # - ingress.yaml  # si tu veux exposer le service à l'extérieur du cluster
