@@ -49,7 +49,7 @@ spec:
       volumes:
         - name: data
           persistentVolumeClaim:
-            claimName: elasticsearch-data-claim
+            claimName: elasticsearch-data-prod
         - name: config
           configMap:
             name: elasticsearch-config
