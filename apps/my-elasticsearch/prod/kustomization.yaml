@@ -4,7 +4,9 @@ resources:
   - configmap.yaml
   - deployment-elasticsearch.yaml
   - deployment-exporter.yaml
+  - deployment-kibana.yaml
   - service-exporter.yaml
   - service-elasticsearch.yaml
+  - service-kibana.yaml
 
     # - ingress.yaml  # si tu veux exposer le service à l'extérieur du cluster
