@@ -1,0 +1,62 @@
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: monitoring-stack
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    targetRevision: 48.1.1
+    chart: kube-prometheus-stack
+    helm:
+      values: |
+        grafana:
+          enabled: true
+          adminPassword: "admin"  # À remplacer par un Secret
+          persistence:
+            enabled: true
+            storageClassName: standard
+            size: 10Gi
+          sidecar:
+            dashboards:
+              enabled: true
+              label: grafana_dashboard
+            datasources:
+              enabled: true
+              defaultDatasourceEnabled: true
+          plugins:
+            - grafana-piechart-panel
+            - grafana-worldmap-panel
+
+        prometheus:
+          enabled: true
+          prometheusSpec:
+            serviceMonitorSelectorNilUsesHelmValues: false
+            podMonitorSelectorNilUsesHelmValues: false
+
+        alertmanager:
+          enabled: true
+
+        loki:
+          enabled: true
+          persistence:
+            enabled: true
+            size: 10Gi
+            storageClassName: standard
+
+        promtail:
+          enabled: true
+          config:
+            clients:
+              - url: http://loki.monitoring:3100/loki/api/v1/push
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
