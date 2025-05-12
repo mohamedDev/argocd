@@ -29,3 +29,106 @@ spec:
         syncOptions:
           - CreateNamespace=true # Crée le namespace si il n'existe pas
           - ApplyOutOfSyncOnly=true # Applique uniquement les ressources qui ne sont pas synchronisées
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: loki-stack
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://grafana.github.io/helm-charts
+    targetRevision: 2.9.10  # Version stable récente
+    chart: loki-stack
+    helm:
+      values: |
+        loki:
+          enabled: true
+          config:
+            auth_enabled: false
+            ingester:
+              lifecycler:
+                ring:
+                  kvstore:
+                    store: inmemory
+                  replication_factor: 1
+            schema_config:
+              configs:
+                - from: 2020-10-24
+                  store: boltdb-shipper
+                  object_store: filesystem
+                  schema: v11
+                  index:
+                    prefix: index_
+                    period: 24h
+          persistence:
+            enabled: true
+            size: 10Gi
+        
+        promtail:
+          enabled: true
+          config:
+            clients:
+              - url: http://loki:3100/loki/api/v1/push
+        
+        grafana:
+          enabled: false  # Désactivé si vous utilisez déjà Grafana du kube-prometheus-stack
+          sidecar:
+            datasources:
+              enabled: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: grafana
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    targetRevision: 48.1.1
+    chart: kube-prometheus-stack
+    helm:
+      values: |
+        grafana:
+          enabled: true
+          adminPassword: "admin"  # À remplacer par un SealedSecret
+          persistence:
+            enabled: true
+            size: 10Gi
+          sidecar:
+            dashboards:
+              enabled: true
+              label: grafana_dashboard
+            datasources:
+              enabled: true
+          ingress:
+            enabled: false
+          plugins:
+            - grafana-piechart-panel
+            - grafana-worldmap-panel
+        
+        prometheus:
+          enabled: true
+        
+        alertmanager:
+          enabled: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
