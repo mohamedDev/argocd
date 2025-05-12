@@ -14,6 +14,7 @@ spec:
         - ./grafana-values.yaml
   destination:
     server: https://kubernetes.default.svc
+    namespace: monitoring
   syncPolicy:
     automated:
       prune: true
