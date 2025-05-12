@@ -10,7 +10,7 @@ spec:
         revision: main
         directories:
           - path: apps/*/* # => toutes les combinaisons apps/service/env
-          - path: apps/monitoring/* # => tous les services
+          - path: monitoring/* # => tous les services
   template:
     metadata:
       name: "{{path[1]}}{{'-' + path.basename if path[1] != path.basename else ''}}" # Ex: users-service-dev
