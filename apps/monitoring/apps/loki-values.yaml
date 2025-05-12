@@ -1,8 +1,0 @@
-promtail:
-  enabled: true
-  serviceMonitor:
-    enabled: true
-grafana:
-  enabled: false
-loki:
-  isDefault: true
