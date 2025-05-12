@@ -4,5 +4,4 @@ resources:
   - https://github.com/prometheus-community/helm-charts/kube-prometheus-stack?ref=v45.0.0
 
 patchesStrategicMerge:
-  - patches/prometheus-scrape-config.yaml
-  - patches/grafana-config.yaml
+  - prometheus-scrape-config.yaml
