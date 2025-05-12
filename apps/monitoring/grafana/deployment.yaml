@@ -1,29 +1,27 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: prometheus
+  name: grafana
   namespace: monitoring
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: prometheus
+      app: grafana
   template:
     metadata:
       labels:
-        app: prometheus
+        app: grafana
     spec:
       containers:
-        - name: prometheus
-          image: prom/prometheus:latest
-          args:
-            - "--config.file=/etc/prometheus/prometheus.yml"
+        - name: grafana
+          image: grafana/grafana:latest
           ports:
-            - containerPort: 9090
+            - containerPort: 3000
           volumeMounts:
-            - name: config-volume
-              mountPath: /etc/prometheus
+            - name: config
+              mountPath: /etc/grafana/provisioning/datasources
       volumes:
-        - name: config-volume
+        - name: config
           configMap:
-            name: prometheus-config
+            name: grafana-datasources
