@@ -10,9 +10,10 @@ spec:
         revision: main
         directories:
           - path: apps/*/* # => toutes les combinaisons apps/service/env
+          - path: apps/monitoring/* # => tous les services
   template:
     metadata:
-      name: "{{path[1]}}-{{path.basename}}" # Ex: users-service-dev
+      name: "{{path[1]}}{{'-' + path.basename if path[1] != path.basename else ''}}" # Ex: users-service-dev
     spec:
       project: default
       source:
@@ -21,7 +22,7 @@ spec:
         path: "{{path}}" # Ex: apps/users-service/dev
       destination:
         server: https://kubernetes.default.svc
-        namespace: "{{path[1]}}-{{path.basename}}" # Ex: users-service-dev
+        namespace: "{{path[1]}}{{'-' + path.basename if path[1] != path.basename else ''}}"
       syncPolicy:
         automated: # Synchronisation automatique
           prune: true # Supprime les ressources qui ne sont plus dans le repo git
