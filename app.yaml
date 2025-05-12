@@ -1,7 +1,8 @@
+
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: grafana
+  name: monitoring-stack
   namespace: argocd
 spec:
   project: default
@@ -13,9 +14,10 @@ spec:
       values: |
         grafana:
           enabled: true
-          adminPassword: "admin"  # À remplacer par un SealedSecret
+          adminPassword: "admin"  # À remplacer par un Secret
           persistence:
             enabled: true
+            storageClassName: standard
             size: 10Gi
           sidecar:
             dashboards:
@@ -23,17 +25,32 @@ spec:
               label: grafana_dashboard
             datasources:
               enabled: true
-          ingress:
-            enabled: false
+              defaultDatasourceEnabled: true
           plugins:
             - grafana-piechart-panel
             - grafana-worldmap-panel
-        
+
         prometheus:
           enabled: true
-        
+          prometheusSpec:
+            serviceMonitorSelectorNilUsesHelmValues: false
+            podMonitorSelectorNilUsesHelmValues: false
+
         alertmanager:
           enabled: true
+
+        loki:
+          enabled: true
+          persistence:
+            enabled: true
+            size: 10Gi
+            storageClassName: standard
+
+        promtail:
+          enabled: true
+          config:
+            clients:
+              - url: http://loki.monitoring:3100/loki/api/v1/push
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
@@ -41,3 +58,5 @@ spec:
     automated:
       prune: true
       selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
