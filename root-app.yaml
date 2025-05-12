@@ -21,9 +21,9 @@ spec:
         path: "{{path}}" # Ex: apps/users-service/dev
       destination:
         server: https://kubernetes.default.svc
-        namespace: '{{path[1]}}-{{path.basename}}' # Ex: users-service-dev
-      syncPolicy: 
-        automated:  # Synchronisation automatique
+        namespace: "{{path[1]}}-{{path.basename}}" # Ex: users-service-dev
+      syncPolicy:
+        automated: # Synchronisation automatique
           prune: true # Supprime les ressources qui ne sont plus dans le repo git
           selfHeal: true # Répare les ressources qui ne sont plus synchronisées
         syncOptions:
@@ -34,65 +34,7 @@ spec:
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: loki-stack
-  namespace: argocd
-spec:
-  project: default
-  source:
-    repoURL: https://grafana.github.io/helm-charts
-    targetRevision: 2.9.10  # Version stable récente
-    chart: loki-stack
-    helm:
-      values: |
-        loki:
-          enabled: true
-          config:
-            auth_enabled: false
-            ingester:
-              lifecycler:
-                ring:
-                  kvstore:
-                    store: inmemory
-                  replication_factor: 1
-            schema_config:
-              configs:
-                - from: 2020-10-24
-                  store: boltdb-shipper
-                  object_store: filesystem
-                  schema: v11
-                  index:
-                    prefix: index_
-                    period: 24h
-          persistence:
-            enabled: true
-            size: 10Gi
-        
-        promtail:
-          enabled: true
-          config:
-            clients:
-              - url: http://loki:3100/loki/api/v1/push
-        
-        grafana:
-          enabled: false  # Désactivé si vous utilisez déjà Grafana du kube-prometheus-stack
-          sidecar:
-            datasources:
-              enabled: true
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: monitoring
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
-
----
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: grafana
+  name: monitoring-stack
   namespace: argocd
 spec:
   project: default
@@ -104,9 +46,10 @@ spec:
       values: |
         grafana:
           enabled: true
-          adminPassword: "admin"  # À remplacer par un SealedSecret
+          adminPassword: "admin"  # À remplacer par un Secret
           persistence:
             enabled: true
+            storageClassName: standard
             size: 10Gi
           sidecar:
             dashboards:
@@ -114,17 +57,32 @@ spec:
               label: grafana_dashboard
             datasources:
               enabled: true
-          ingress:
-            enabled: false
+              defaultDatasourceEnabled: true
           plugins:
             - grafana-piechart-panel
             - grafana-worldmap-panel
-        
+
         prometheus:
           enabled: true
-        
+          prometheusSpec:
+            serviceMonitorSelectorNilUsesHelmValues: false
+            podMonitorSelectorNilUsesHelmValues: false
+
         alertmanager:
           enabled: true
+
+        loki:
+          enabled: true
+          persistence:
+            enabled: true
+            size: 10Gi
+            storageClassName: standard
+
+        promtail:
+          enabled: true
+          config:
+            clients:
+              - url: http://loki.monitoring:3100/loki/api/v1/push
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
@@ -132,3 +90,5 @@ spec:
     automated:
       prune: true
       selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
