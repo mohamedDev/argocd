@@ -33,6 +33,7 @@ spec:
           prometheusSpec:
             serviceMonitorSelectorNilUsesHelmValues: false
             podMonitorSelectorNilUsesHelmValues: false
+            storageSpec: {}  # <== supprime toute persistance
 
         alertmanager:
           enabled: false
@@ -40,13 +41,14 @@ spec:
         loki:
           enabled: true
           persistence:
-            enabled: false
+            enabled: false  # pas de volume
 
         promtail:
           enabled: true
           config:
             clients:
               - url: http://loki.monitoring:3100/loki/api/v1/push
+
   destination:
     server: https://kubernetes.default.svc
     namespace: monitoring
