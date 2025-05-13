@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vscode-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vscode-server
+  template:
+    metadata:
+      labels:
+        app: vscode-server
+    spec:
+      containers:
+        - name: code-server
+          image: codercom/code-server:latest
+          ports:
+            - containerPort: 8080
+          env:
+            - name: PASSWORD
+              value: "vscode123" # 🔒 À modifier ou externaliser
+          volumeMounts:
+            - name: workspace
+              mountPath: /workspace
+      volumes:
+        - name: workspace
+          persistentVolumeClaim:
+            claimName: python-vlm-dev

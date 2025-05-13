@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: python-runner
+  labels:
+    app: python-runner
+spec:
+  containers:
+    - name: python
+      image: python:3.10-slim
+      command: ["sleep", "infinity"]
+      volumeMounts:
+        - name: shared-models
+          mountPath: /workspace
+  volumes:
+    - name: shared-models
+      persistentVolumeClaim:
+        claimName: python-vlm-dev # 🔁 Ton PVC
+  restartPolicy: Never

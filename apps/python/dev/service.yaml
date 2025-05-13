@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: vscode-server
+spec:
+  selector:
+    app: vscode-server
+  type: NodePort  # 👈 ou LoadBalancer si besoin
+  ports:
+    - port: 80
+      targetPort: 8080
+      nodePort: 30080
