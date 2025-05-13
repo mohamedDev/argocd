@@ -12,6 +12,15 @@ spec:
       labels:
         app: vscode-server
     spec:
+      securityContext:
+        fsGroup: 1000
+      initContainers:
+        - name: fix-permissions
+          image: busybox
+          command: ["sh", "-c", "chmod -R 777 /workspace"]
+          volumeMounts:
+            - name: workspace
+              mountPath: /workspace
       containers:
         - name: code-server
           image: codercom/code-server:latest
@@ -23,12 +32,7 @@ spec:
           volumeMounts:
             - name: workspace
               mountPath: /workspace
-          securityContext:                # 👇 Ajout ici
-            runAsUser: 1000
-            runAsGroup: 1000
       volumes:
         - name: workspace
           persistentVolumeClaim:
             claimName: python-vlm-dev
-      securityContext:                   # 👇 fsGroup ici pour le volume
-        fsGroup: 1000
