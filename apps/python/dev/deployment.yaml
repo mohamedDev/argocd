@@ -19,11 +19,16 @@ spec:
             - containerPort: 8080
           env:
             - name: PASSWORD
-              value: "vscode123" # 🔒 À modifier ou externaliser
+              value: "vscode123"
           volumeMounts:
             - name: workspace
               mountPath: /workspace
+          securityContext:                # 👇 Ajout ici
+            runAsUser: 1000
+            runAsGroup: 1000
       volumes:
         - name: workspace
           persistentVolumeClaim:
             claimName: python-vlm-dev
+      securityContext:                   # 👇 fsGroup ici pour le volume
+        fsGroup: 1000
