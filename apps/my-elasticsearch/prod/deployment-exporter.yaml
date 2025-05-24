@@ -12,6 +12,9 @@ spec:
     metadata:
       labels:
         app: elasticsearch-exporter
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "9114"
     spec:
       containers:
         - name: exporter
