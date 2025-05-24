@@ -1,6 +1,7 @@
 resources:
   - configmap.yaml
   - deployment.yaml
+  - service-account.yaml
   - prometheus-rbac.yaml
   - service.yaml
 
