@@ -4,6 +4,10 @@ metadata:
   name: triton-server
   labels:
     app: triton
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8002"
+    prometheus.io/path: "/metrics"
 spec:
   replicas: 1
   selector:
