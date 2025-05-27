@@ -15,7 +15,9 @@ spec:
       containers:
         - name: python
           image: python:3.10-slim
-          command: ["sleep", "infinity"]
+          ports:
+            - containerPort: 8001
+          command: ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "8001"]
           volumeMounts:
             - name: shared-models
               mountPath: /workspace
@@ -23,3 +25,17 @@ spec:
         - name: shared-models
           persistentVolumeClaim:
             claimName: python-vlm-dev
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: python-runner-service
+spec:
+  selector:
+    app: python-runner
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8001
+  type: ClusterIP  # ou NodePort ou LoadBalancer selon ton besoin
