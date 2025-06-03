@@ -3,7 +3,7 @@ kind: ConfigMap
 metadata:
   name: kafka-config
 data:
-  KAFKA_ENABLE_KRAFT: "false"
+  KAFKA_ENABLE_KRAFT: false
   KAFKA_BROKER_ID: 1
   KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
   KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka.kafka-dev.svc.cluster.local:9092
