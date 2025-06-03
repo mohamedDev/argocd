@@ -39,3 +39,10 @@ spec:
       port: 80
       targetPort: 8001
   type: ClusterIP  # ou NodePort ou LoadBalancer selon ton besoin
+
+
+# kubectl exec -it <pod-name> -- bash
+# apt update && apt install -y pip
+# pip install fastapi uvicorn transformers
+# pip install tritonclient[http] numpy sentencepiece sacremoses
+# uvicorn server:app --host 0.0.0.0 --port 8001
