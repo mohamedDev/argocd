@@ -28,6 +28,10 @@ spec:
               value: "PLAINTEXT:PLAINTEXT"
             - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
               value: "1"
+            - name: "ALLOW_PLAINTEXT_LISTENER"
+              value: "yes"
+            - name: "ALLOW_PLAINTEXT_LISTENER"
+              value: "yes"
 
 ---
 apiVersion: v1
