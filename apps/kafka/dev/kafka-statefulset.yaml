@@ -23,7 +23,7 @@ spec:
             - name: KAFKA_BROKER_ID
               value: "1"
             - name: KAFKA_ADVERTISED_LISTENERS
-              value: "PLAINTEXT://kafka.kafka-dev.svc.cluster.local:9092"
+              value: "PLAINTEXT://localhost:9092"
             - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
               value: "PLAINTEXT:PLAINTEXT"
             - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
