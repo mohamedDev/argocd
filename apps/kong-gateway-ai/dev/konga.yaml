@@ -50,12 +50,4 @@ spec:
         - name: konga-prepare
           image: pantsel/konga:latest
           command: ["node"]
-          args:
-            [
-              "./bin/konga.js",
-              "prepare",
-              "--adapter",
-              "sails-disk",
-              "--uri",
-              "sails-disk://./konga.db",
-            ]
+          args: ["./bin/konga.js", "prepare", "--adapter", "sails-disk", "--uri", "sails-disk://./konga.db"]
