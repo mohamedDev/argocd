@@ -129,8 +129,26 @@ spec:
           value: "konga"
         - name: POSTGRES_PASSWORD
           value: "konga"
+        - name: PGDATA
+          value: "/var/lib/postgresql/data/pgdata"
         ports:
         - containerPort: 5432
+        readinessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pg_isready -U konga -d konga
+          initialDelaySeconds: 15
+          periodSeconds: 5
+        livenessProbe:
+          exec:
+            command:
+            - /bin/sh
+            - -c
+            - pg_isready -U konga -d konga
+          initialDelaySeconds: 30
+          periodSeconds: 10
 ---
 # PostgreSQL Service
 apiVersion: v1
@@ -161,14 +179,26 @@ spec:
       labels:
         app: konga
     spec:
+      initContainers:
+      - name: wait-for-postgres
+        image: postgres:13
+        command: 
+        - /bin/sh
+        - -c
+        - |
+          until pg_isready -h postgres -p 5432 -U konga; do
+            echo "Waiting for postgres..."
+            sleep 2
+          done
+          echo "PostgreSQL is ready!"
       containers:
       - name: konga
-        image: pantsel/konga:latest
+        image: pantsel/konga:0.14.9
         env:
         - name: NODE_ENV
           value: "production"
         - name: KONGA_HOOK_TIMEOUT
-          value: "60000"
+          value: "120000"
         - name: DB_ADAPTER
           value: "postgres"
         - name: DB_HOST
@@ -182,18 +212,18 @@ spec:
         - name: DB_DATABASE
           value: "konga"
         - name: KONGA_SEED_USER_DATA_SOURCE_FILE
-          value: "/app/user_seed.js"
+          value: "/tmp/userdb.data"
         ports:
         - containerPort: 1337
           name: http
         volumeMounts:
-        - name: konga-seed
-          mountPath: /app/user_seed.js
-          subPath: user_seed.js
+        - name: userdb
+          mountPath: /tmp/userdb.data
+          subPath: userdb.data
       volumes:
-      - name: konga-seed
+      - name: userdb
         configMap:
-          name: konga-seed
+          name: konga-userdb
 ---
 # Konga Service
 apiVersion: v1
@@ -211,21 +241,22 @@ spec:
     targetPort: 1337
     nodePort: 30337
 ---
-# Konga User Seed
+# Konga User Database
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: konga-seed
+  name: konga-userdb
   namespace: kong-test
 data:
-  user_seed.js: |
+  userdb.data: |
     module.exports = [
       {
         "username": "admin",
         "email": "admin@konga.com",
         "firstName": "Admin",
-        "lastName": "User",
+        "lastName": "User", 
         "password": "adminpass",
-        "admin": true
+        "admin": true,
+        "active": true
       }
     ];
