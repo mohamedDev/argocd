@@ -1,3 +1,4 @@
+
 # Secret pour les mots de passe
 apiVersion: v1
 kind: Secret
@@ -31,7 +32,7 @@ spec:
     spec:
       containers:
       - name: postgres
-        image: postgres:13-alpine
+        image: postgres:11-alpine
         ports:
         - containerPort: 5432
         env:
@@ -313,7 +314,7 @@ spec:
       restartPolicy: OnFailure
       initContainers:
       - name: wait-for-postgres
-        image: postgres:13-alpine
+        image: postgres:11-alpine
         command:
           - sh
           - -c
@@ -381,7 +382,7 @@ spec:
     spec:
       containers:
       - name: konga
-        image: pantsel/konga:0.14.7
+        image: pantsel/konga:0.14.1
         env:
         - name: DB_ADAPTER
           value: "postgres"
