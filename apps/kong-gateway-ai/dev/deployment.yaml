@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: kong-gateway
+  namespace: kong
 spec:
   replicas: 1
   selector:
@@ -18,15 +19,15 @@ spec:
           ports:
             - containerPort: 8000 # Proxy
             - containerPort: 8001 # Admin API
-          env:
-            - name: KONG_DATABASE
-              value: "off"
-            - name: KONG_DECLARATIVE_CONFIG
-              value: /kong/kong.yaml
+          envFrom:
+            - configMapRef:
+                name: kong-env
           volumeMounts:
             - name: kong-config
               mountPath: /kong
-          volumes:
-            - name: kong-config
-              configMap:
-                name: kong-config
+      volumes: # <---- doit être au même niveau que containers:
+        - name: kong-config
+          configMap:
+            name: kong-config
+---
+
