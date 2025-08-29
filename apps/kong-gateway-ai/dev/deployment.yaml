@@ -31,7 +31,7 @@ spec:
     spec:
       containers:
       - name: postgres
-        image: postgres:15-alpine
+        image: postgres:13-alpine
         ports:
         - containerPort: 5432
         env:
@@ -313,7 +313,7 @@ spec:
       restartPolicy: OnFailure
       initContainers:
       - name: wait-for-postgres
-        image: postgres:15-alpine
+        image: postgres:13-alpine
         command:
           - sh
           - -c
@@ -322,8 +322,7 @@ spec:
               echo "Waiting for postgres..."
               sleep 2
             done
-            # Create konga database
-            PGPASSWORD=kong123 psql -h postgres -U kong -d kong -c "CREATE DATABASE konga;" || echo "Database konga might already exist"
+            echo "PostgreSQL is ready!"
         env:
         - name: PGPASSWORD
           valueFrom:
@@ -332,7 +331,7 @@ spec:
               key: POSTGRES_PASSWORD
       containers:
       - name: konga-prepare
-        image: pantsel/konga:0.14.9
+        image: pantsel/konga:0.14.7
         env:
         - name: DB_ADAPTER
           value: "postgres"
@@ -351,17 +350,15 @@ spec:
               name: postgres-secret
               key: POSTGRES_PASSWORD
         - name: DB_DATABASE
-          value: "konga"
-        - name: DB_URI
-          value: "postgresql://kong:kong123@postgres:5432/konga"
+          value: "kong"
         command: 
-          - node
-          - ./bin/konga.js 
-          - prepare
-          - --adapter
-          - postgres
-          - --uri
-          - postgresql://kong:kong123@postgres:5432/konga
+          - sh
+          - -c
+          - |
+            # Wait a bit more for postgres to be fully ready
+            sleep 10
+            # Prepare konga tables in kong database
+            node ./bin/konga.js prepare --adapter postgres --uri postgresql://kong:kong123@postgres:5432/kong
 
 ---
 # Konga Deployment
@@ -384,7 +381,7 @@ spec:
     spec:
       containers:
       - name: konga
-        image: pantsel/konga:0.14.9
+        image: pantsel/konga:0.14.7
         env:
         - name: DB_ADAPTER
           value: "postgres"
@@ -403,11 +400,9 @@ spec:
               name: postgres-secret
               key: POSTGRES_PASSWORD
         - name: DB_DATABASE
-          value: "konga"
+          value: "kong"
         - name: NODE_ENV
           value: "production"
-        - name: KONGA_SEED_USER_DATA_SOURCE_FILE
-          value: "/app/user_seed.js"
         ports:
         - name: konga
           containerPort: 1337
