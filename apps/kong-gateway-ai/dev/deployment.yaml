@@ -1,4 +1,3 @@
-
 # Secret pour les mots de passe
 apiVersion: v1
 kind: Secret
@@ -324,7 +323,7 @@ spec:
               sleep 2
             done
             # Create konga database
-            PGPASSWORD=kong123 psql -h postgres -U kong -d kong -c "CREATE DATABASE konga;" || echo "Database might already exist"
+            PGPASSWORD=kong123 psql -h postgres -U kong -d kong -c "CREATE DATABASE konga;" || echo "Database konga might already exist"
         env:
         - name: PGPASSWORD
           valueFrom:
@@ -353,7 +352,16 @@ spec:
               key: POSTGRES_PASSWORD
         - name: DB_DATABASE
           value: "konga"
-        command: ["node", "./bin/konga.js", "prepare"]
+        - name: DB_URI
+          value: "postgresql://kong:kong123@postgres:5432/konga"
+        command: 
+          - node
+          - ./bin/konga.js 
+          - prepare
+          - --adapter
+          - postgres
+          - --uri
+          - postgresql://kong:kong123@postgres:5432/konga
 
 ---
 # Konga Deployment
