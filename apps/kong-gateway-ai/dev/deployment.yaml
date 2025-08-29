@@ -1,4 +1,4 @@
-
+---
 # Secret pour les mots de passe
 apiVersion: v1
 kind: Secret
@@ -380,6 +380,20 @@ spec:
       labels:
         app: konga
     spec:
+      initContainers:
+      - name: wait-for-konga-prepare
+        image: busybox:1.35
+        command:
+          - sh
+          - -c
+          - |
+            echo "Waiting for konga-prepare job to complete..."
+            while ! nslookup postgres.kong-system.svc.cluster.local; do
+              echo "Waiting for postgres service..."
+              sleep 5
+            done
+            echo "Postgres is available, waiting a bit more for konga-prepare to complete..."
+            sleep 30
       containers:
       - name: konga
         image: pantsel/konga:0.14.1
@@ -404,6 +418,8 @@ spec:
           value: "kong"
         - name: NODE_ENV
           value: "production"
+        - name: KONGA_LOG_LEVEL
+          value: "debug"
         ports:
         - name: konga
           containerPort: 1337
@@ -412,16 +428,18 @@ spec:
           httpGet:
             path: /
             port: 1337
-          initialDelaySeconds: 60
+          initialDelaySeconds: 120
           timeoutSeconds: 10
-          periodSeconds: 10
+          periodSeconds: 30
+          failureThreshold: 10
         readinessProbe:
           httpGet:
             path: /
             port: 1337
-          initialDelaySeconds: 30
+          initialDelaySeconds: 90
           timeoutSeconds: 10
-          periodSeconds: 5
+          periodSeconds: 10
+          failureThreshold: 6
         resources:
           requests:
             memory: "128Mi"
