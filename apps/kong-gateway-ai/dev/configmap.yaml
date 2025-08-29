@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kong-env
+data:
+  KONG_DATABASE: "off"
+  KONG_DECLARATIVE_CONFIG: /kong/kong.yaml
+  KONG_PLUGINS: bundled,ai-proxy,ai-prompt-guard,ai-pii-sanitizer,ai-rag,ai-semantic-cache
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kong-config
+data:
+  kong.yaml: |
+    _format_version: "3.0"
+    _transform: true

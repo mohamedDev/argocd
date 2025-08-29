@@ -13,15 +13,20 @@ spec:
         app: kong
     spec:
       containers:
-      - name: kong
-        image: kong/kong-gateway:3.10
-        ports:
-        - containerPort: 8000   # Proxy
-        - containerPort: 8001   # Admin API
-        env:
-        - name: KONG_DATABASE
-          value: "off"
-        - name: KONG_DECLARATIVE_CONFIG
-          value: /dev/null
-        - name: KONG_PLUGINS
-          value: bundled,ai-proxy
+        - name: kong
+          image: kong/kong-gateway:3.10
+          ports:
+            - containerPort: 8000 # Proxy
+            - containerPort: 8001 # Admin API
+          env:
+            - name: KONG_DATABASE
+            - value: "off"
+            - name: KONG_DECLARATIVE_CONFIG
+              value: /kong/kong.yaml
+          volumeMounts:
+            - name: kong-config
+              mountPath: /kong
+          volumes:
+            - name: kong-config
+              configMap:
+                name: kong-config
