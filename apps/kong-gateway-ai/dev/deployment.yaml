@@ -28,5 +28,4 @@ spec:
         - name: kong-config
           configMap:
             name: kong-config
----
-
+            
