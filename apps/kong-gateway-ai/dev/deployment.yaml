@@ -24,4 +24,4 @@ spec:
         - name: KONG_DECLARATIVE_CONFIG
           value: /dev/null
         - name: KONG_PLUGINS
-          value: bundled,ai-proxy,ai-prompt-guard,ai-pii-sanitizer,ai-rag,ai-semantic-cache
+          value: bundled,ai-proxy
