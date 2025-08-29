@@ -1,11 +1,16 @@
 ---
+# Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kong-test
 ---
 # Kong Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: kong
-  
+  namespace: kong-test
 spec:
   replicas: 1
   selector:
@@ -60,7 +65,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: kong
-  
+  namespace: kong-test
 spec:
   type: NodePort
   selector:
@@ -84,7 +89,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: kong-config
-  
+  namespace: kong-test
 data:
   kong.yml: |
     _format_version: "3.0"
@@ -98,12 +103,54 @@ data:
         paths:
         - /example
 ---
+# PostgreSQL for Konga
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  namespace: kong-test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:13
+        env:
+        - name: POSTGRES_DB
+          value: "konga"
+        - name: POSTGRES_USER
+          value: "konga"
+        - name: POSTGRES_PASSWORD
+          value: "konga"
+        ports:
+        - containerPort: 5432
+---
+# PostgreSQL Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  namespace: kong-test
+spec:
+  selector:
+    app: postgres
+  ports:
+  - port: 5432
+    targetPort: 5432
+---
 # Konga Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: konga
-  
+  namespace: kong-test
 spec:
   replicas: 1
   selector:
@@ -119,19 +166,41 @@ spec:
         image: pantsel/konga:latest
         env:
         - name: NODE_ENV
-          value: "development"
+          value: "production"
         - name: KONGA_HOOK_TIMEOUT
           value: "60000"
+        - name: DB_ADAPTER
+          value: "postgres"
+        - name: DB_HOST
+          value: "postgres"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_USER
+          value: "konga"
+        - name: DB_PASSWORD
+          value: "konga"
+        - name: DB_DATABASE
+          value: "konga"
+        - name: KONGA_SEED_USER_DATA_SOURCE_FILE
+          value: "/app/user_seed.js"
         ports:
         - containerPort: 1337
           name: http
+        volumeMounts:
+        - name: konga-seed
+          mountPath: /app/user_seed.js
+          subPath: user_seed.js
+      volumes:
+      - name: konga-seed
+        configMap:
+          name: konga-seed
 ---
 # Konga Service
 apiVersion: v1
 kind: Service
 metadata:
   name: konga
-  
+  namespace: kong-test
 spec:
   type: NodePort
   selector:
@@ -141,3 +210,22 @@ spec:
     port: 1337
     targetPort: 1337
     nodePort: 30337
+---
+# Konga User Seed
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: konga-seed
+  namespace: kong-test
+data:
+  user_seed.js: |
+    module.exports = [
+      {
+        "username": "admin",
+        "email": "admin@konga.com",
+        "firstName": "Admin",
+        "lastName": "User",
+        "password": "adminpass",
+        "admin": true
+      }
+    ];
