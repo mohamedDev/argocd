@@ -20,7 +20,7 @@ spec:
             - containerPort: 8001 # Admin API
           env:
             - name: KONG_DATABASE
-            - value: "off"
+              value: "off"
             - name: KONG_DECLARATIVE_CONFIG
               value: /kong/kong.yaml
           volumeMounts:
