@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: kong-proxy
+spec:
+  type: LoadBalancer
+  ports:
+  - name: proxy
+    port: 80
+    targetPort: 8000
+  selector:
+    app: kong
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kong-admin
+spec:
+  type: LoadBalancer
+  ports:
+  - name: admin
+    port: 8001
+    targetPort: 8001
+  selector:
+    app: kong

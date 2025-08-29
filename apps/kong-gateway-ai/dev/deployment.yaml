@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kong-gateway
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kong
+  template:
+    metadata:
+      labels:
+        app: kong
+    spec:
+      containers:
+      - name: kong
+        image: kong/kong-gateway:3.10
+        ports:
+        - containerPort: 8000   # Proxy
+        - containerPort: 8001   # Admin API
+        env:
+        - name: KONG_DATABASE
+          value: "off"
+        - name: KONG_DECLARATIVE_CONFIG
+          value: /dev/null
+        - name: KONG_PLUGINS
+          value: bundled,ai-proxy,ai-prompt-guard,ai-pii-sanitizer,ai-rag,ai-semantic-cache
