@@ -1,5 +1,6 @@
 resources:
     - configmap.yaml
     - deployment.yaml
+    - konga-postgres.yaml
     - service.yaml
     - konga.yaml

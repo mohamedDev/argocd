@@ -18,12 +18,19 @@ spec:
           ports:
             - containerPort: 1337
           env:
-            - name: NODE_ENV
-              value: "production"
-            - name: KONGA_SEED_USER
-              value: "admin"
-            - name: KONGA_SEED_PASSWORD
-              value: "admin123"
+            - name: DB_ADAPTER
+              value: "postgres"
+            - name: DB_HOST
+              value: "konga-postgres"
+            - name: DB_PORT
+              value: "5432"
+            - name: DB_USER
+              value: "konga"
+            - name: DB_PASSWORD
+              value: "konga"
+            - name: DB_DATABASE
+              value: "konga"
+
 ---
 apiVersion: v1
 kind: Service
@@ -37,17 +44,3 @@ spec:
       name: http
   selector:
     app: konga
----
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: konga-prepare
-spec:
-  template:
-    spec:
-      restartPolicy: OnFailure
-      containers:
-        - name: konga-prepare
-          image: pantsel/konga:latest
-          command: ["node"]
-          args: ["./bin/konga.js", "prepare", "--adapter", "sails-disk", "--uri", "sails-disk://./konga.db"]
