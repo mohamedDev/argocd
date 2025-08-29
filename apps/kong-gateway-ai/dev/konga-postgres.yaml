@@ -25,7 +25,7 @@ spec:
     spec:
       containers:
         - name: postgres
-          image: postgres:13-alpine
+          image: postgres:11
           env:
             - name: POSTGRES_USER
               value: konga
