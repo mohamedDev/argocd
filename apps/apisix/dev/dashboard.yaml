@@ -51,7 +51,7 @@ spec:
     port: 2379
     targetPort: 2379
 
-# APISIX Configuration - Version simplifiée
+# APISIX Configuration - Version complète
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -77,6 +77,13 @@ data:
     apisix:
       node_listen: 9080
       enable_ipv6: false
+      enable_control: true
+      control:
+        ip: "0.0.0.0"
+        port: 9092
+    nginx_config:
+      error_log: "/usr/local/apisix/logs/error.log"
+      access_log: "/usr/local/apisix/logs/access.log"
     etcd:
       host:
         - "http://etcd-service:2379"
@@ -101,24 +108,51 @@ spec:
       initContainers:
       - name: wait-for-etcd
         image: busybox:1.35
-        command: ['sh', '-c', 'until nc -z etcd-service 2379; do echo waiting for etcd; sleep 2; done;']
+        command: ['sh', '-c']
+        args:
+        - |
+          echo "Waiting for etcd to be ready..."
+          until nc -z etcd-service 2379; do 
+            echo "Waiting for etcd-service:2379..."
+            sleep 2
+          done
+          echo "ETCD is ready!"
       containers:
       - name: apisix
         image: apache/apisix:3.2.0-debian
         ports:
         - containerPort: 9080
         - containerPort: 9180
+        - containerPort: 9092
         volumeMounts:
         - name: apisix-config
-          mountPath: /usr/local/apisix/conf/config.yaml
-          subPath: config.yaml
+          mountPath: /usr/local/apisix/conf
+        - name: apisix-logs
+          mountPath: /usr/local/apisix/logs
         env:
         - name: APISIX_STAND_ALONE
           value: "false"
+        - name: APISIX_DEPLOYMENT_ETCD_HOST
+          value: "http://etcd-service:2379"
+        command: ["/bin/sh", "-c"]
+        args:
+        - |
+          echo "Starting APISIX initialization..."
+          cd /usr/local/apisix
+          echo "Config file content:"
+          cat conf/config.yaml
+          echo "Running init..."
+          /usr/local/openresty/luajit/bin/luajit ./apisix/cli/apisix.lua init
+          echo "Running init_etcd..."
+          /usr/local/openresty/luajit/bin/luajit ./apisix/cli/apisix.lua init_etcd
+          echo "Starting APISIX..."
+          exec /usr/local/openresty/luajit/bin/luajit ./apisix/cli/apisix.lua start
       volumes:
       - name: apisix-config
         configMap:
           name: apisix-config
+      - name: apisix-logs
+        emptyDir: {}
 
 ---
 apiVersion: v1
