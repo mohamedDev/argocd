@@ -163,15 +163,15 @@ spec:
     - name: gateway
       port: 9080
       targetPort: 9080
-      nodePort: 30080
+      nodePort: 30081
     - name: admin
       port: 9180
       targetPort: 9180
-      nodePort: 30180
+      nodePort: 30181
     - name: ssl
       port: 9443
       targetPort: 9443
-      nodePort: 30443
+      nodePort: 30444
 
 # ======================
 # APISIX Dashboard ConfigMap
@@ -243,4 +243,4 @@ spec:
     - name: dashboard
       port: 9000
       targetPort: 9000
-      nodePort: 30000
+      nodePort: 30001
