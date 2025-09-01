@@ -63,11 +63,11 @@ data:
       role: traditional
       role_traditional:
         config_provider: etcd
-        etcd:
-          host:
-            - "http://etcd-service:2379"
-          prefix: "/apisix"
-          timeout: 30
+      etcd:
+        host:
+          - "http://etcd-service:2379"
+        prefix: "/apisix"
+        timeout: 30
       admin:
         admin_key:
           - name: "admin"
@@ -82,13 +82,6 @@ data:
     apisix:
       node_listen: 9080
       enable_ipv6: false
-      enable_control: true
-      control:
-        ip: "0.0.0.0"
-        port: 9092
-    nginx_config:
-      error_log: "/usr/local/apisix/logs/error.log"
-      access_log: "/usr/local/apisix/logs/access.log"
   config-default.yaml: |
     apisix:
       node_listen: 9080
@@ -198,7 +191,7 @@ spec:
               done
               echo "ETCD is ready!"
         - name: setup-config
-          image: apache/apisix:3.2.0-debian
+          image: apache/apisix:3.6.0-debian
           command: ["sh", "-c"]
           args:
             - |
@@ -210,7 +203,7 @@ spec:
               mountPath: /tmp/apisix-conf
       containers:
         - name: apisix
-          image: apache/apisix:3.2.0-debian
+          image: apache/apisix:3.6.0-debian
           ports:
             - containerPort: 9080
             - containerPort: 9180
@@ -242,11 +235,20 @@ spec:
               echo "Starting APISIX initialization..."
               cd /usr/local/apisix
 
-              echo "Custom config.yaml content:"
-              cat conf/config.yaml
+              echo "Testing etcd connectivity with curl..."
+              curl -s http://etcd-service:2379/version || echo "Cannot connect to etcd-service:2379"
 
-              echo "Testing etcd connectivity..."
-              nc -zv etcd-service 2379 || echo "Cannot connect to etcd-service:2379"
+              echo "=== Custom config.yaml content ==="
+              cat conf/config.yaml
+              echo "=== End config.yaml ==="
+
+              echo "=== config-default.yaml etcd section ==="
+              grep -A 10 "^etcd:" conf/config-default.yaml || echo "No etcd section found in config-default.yaml"
+              echo "=== End config-default.yaml ==="
+
+              echo "=== Listing conf directory ==="
+              ls -la conf/
+              echo "=== End directory listing ==="
 
               echo "Running init..."
               /usr/local/openresty/luajit/bin/luajit ./apisix/cli/apisix.lua init
