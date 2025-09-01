@@ -52,14 +52,24 @@ metadata:
 data:
   config.yaml: |
     deployment:
-      role: data_plane
-      role_data_plane:
-        config_provider: etcd
+    role: data_plane
+    role_data_plane:
+      config_provider: etcd
+
     etcd:
       host:
         - "http://etcd:2379"
-    plugins:
+      prefix: "/apisix" 
+      timeout: 30
+
+    plugins:  # activer les plugins nécessaires
       - key-auth
       - proxy-rewrite
       - limit-count
       - prometheus
+
+    nginx_config:
+      worker_processes: "auto"
+      error_log: "logs/error.log"
+      http:
+        access_log: "logs/access.log"
