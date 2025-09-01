@@ -1,178 +1,65 @@
----
-# Namespace
 apiVersion: v1
-kind: Namespace
+kind: Service
 metadata:
-  name: kong-test
+  name: apisix
+spec:
+  type: NodePort
+  ports:
+    - port: 80
+      targetPort: 9080
+      nodePort: 30080
+      name: http
+    - port: 443
+      targetPort: 9443
+      nodePort: 30443
+      name: https
+  selector:
+    app: apisix
 ---
-# Kong Deployment avec Kong Manager
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: kong
-  namespace: kong-test
+  name: apisix
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: kong
+      app: apisix
   template:
     metadata:
       labels:
-        app: kong
+        app: apisix
     spec:
       containers:
-      - name: kong
-        image: kong/kong-gateway:3.4
-        env:
-        - name: KONG_DATABASE
-          value: "off"
-        - name: KONG_DECLARATIVE_CONFIG
-          value: "/kong/declarative/kong.yml"
-        - name: KONG_PROXY_ACCESS_LOG
-          value: "/dev/stdout"
-        - name: KONG_ADMIN_ACCESS_LOG
-          value: "/dev/stdout"
-        - name: KONG_PROXY_ERROR_LOG
-          value: "/dev/stderr"
-        - name: KONG_ADMIN_ERROR_LOG
-          value: "/dev/stderr"
-        - name: KONG_ADMIN_LISTEN
-          value: "0.0.0.0:8001"
-        - name: KONG_ADMIN_GUI_LISTEN
-          value: "0.0.0.0:8002"
-        - name: KONG_ADMIN_GUI_URL
-          value: "http://localhost:8002"
-        ports:
-        - containerPort: 8000
-          name: proxy
-        - containerPort: 8001
-          name: admin-api
-        - containerPort: 8002
-          name: admin-gui
-        - containerPort: 8443
-          name: proxy-ssl
-        - containerPort: 8444
-          name: admin-ssl
-        volumeMounts:
-        - name: kong-config
-          mountPath: /kong/declarative/
+        - name: apisix
+          image: apache/apisix:3.9.0-debian
+          ports:
+            - containerPort: 9080
+            - containerPort: 9443
+          volumeMounts:
+            - mountPath: /usr/local/apisix/conf/config.yaml
+              subPath: config.yaml
+              name: apisix-config
       volumes:
-      - name: kong-config
-        configMap:
-          name: kong-config
+        - name: apisix-config
+          configMap:
+            name: apisix-config
 ---
-# Kong Service
-apiVersion: v1
-kind: Service
-metadata:
-  name: kong
-  namespace: kong-test
-spec:
-  type: NodePort
-  selector:
-    app: kong
-  ports:
-  - name: proxy
-    port: 8000
-    targetPort: 8000
-    nodePort: 30000
-  - name: admin-api
-    port: 8001
-    targetPort: 8001
-    nodePort: 30001
-  - name: admin-gui
-    port: 8002
-    targetPort: 8002
-    nodePort: 30002
----
-# Kong Configuration avec plus d'exemples
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: kong-config
-  namespace: kong-test
+  name: apisix-config
 data:
-  kong.yml: |
-    _format_version: "3.0"
-    _transform: true
-    
-    services:
-    - name: httpbin-service
-      url: http://httpbin.org
-      routes:
-      - name: httpbin-route
-        paths:
-        - /httpbin
-        strip_path: true
-    
-    - name: jsonplaceholder-service
-      url: https://jsonplaceholder.typicode.com
-      routes:
-      - name: jsonplaceholder-route
-        paths:
-        - /api
-        strip_path: true
-    
-    consumers:
-    - username: test-user
-      custom_id: user123
-    
+  config.yaml: |
+    deployment:
+      role: data_plane
+      role_data_plane:
+        config_provider: etcd
+    etcd:
+      host:
+        - "http://etcd:2379"
     plugins:
-    - name: cors
-      config:
-        origins:
-        - "*"
-        methods:
-        - GET
-        - POST
-        - PUT
-        - DELETE
-        headers:
-        - Accept
-        - Content-Type
-        - Authorization
----
-# Alternative: Konga simple (optionnel)
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: konga-simple
-  namespace: kong-test
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: konga-simple
-  template:
-    metadata:
-      labels:
-        app: konga-simple
-    spec:
-      containers:
-      - name: konga
-        image: pantsel/konga:0.14.1
-        env:
-        - name: NODE_ENV
-          value: "development"
-        - name: NO_AUTH
-          value: "true"
-        ports:
-        - containerPort: 1337
-          name: http
----
-# Konga Simple Service
-apiVersion: v1
-kind: Service
-metadata:
-  name: konga-simple
-  namespace: kong-test
-spec:
-  type: NodePort
-  selector:
-    app: konga-simple
-  ports:
-  - name: http
-    port: 1337
-    targetPort: 1337
-    nodePort: 30337
+      - key-auth
+      - proxy-rewrite
+      - limit-count
+      - prometheus

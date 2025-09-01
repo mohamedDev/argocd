@@ -1,48 +1,37 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: etcd
+spec:
+  ports:
+    - port: 2379
+      name: client
+  selector:
+    app: etcd
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: konga
+  name: etcd
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: konga
+      app: etcd
   template:
     metadata:
       labels:
-        app: konga
+        app: etcd
     spec:
       containers:
-        - name: konga
-          image: pantsel/konga:latest
-          ports:
-            - containerPort: 1337
+        - name: etcd
+          image: bitnami/etcd:3.5.13
           env:
-            - name: NODE_ENV
-              value: "production"
-            - name: DB_ADAPTER
-              value: "postgres"
-            - name: DB_HOST
-              value: "konga-postgres"
-            - name: DB_PORT
-              value: "5432"
-            - name: DB_USER
-              value: "konga"
-            - name: DB_PASSWORD
-              value: "konga"
-            - name: DB_DATABASE
-              value: "konga"
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: konga-svc
-spec:
-  type: LoadBalancer
-  ports:
-    - port: 1337
-      targetPort: 1337
-      name: http
-  selector:
-    app: konga
+            - name: ALLOW_NONE_AUTHENTICATION
+              value: "yes"
+            - name: ETCD_ADVERTISE_CLIENT_URLS
+              value: "http://0.0.0.0:2379"
+            - name: ETCD_LISTEN_CLIENT_URLS
+              value: "http://0.0.0.0:2379"
+          ports:
+            - containerPort: 2379
