@@ -89,7 +89,8 @@ data:
         listen:
           - port: 9443
         ssl_protocols: "TLSv1.2 TLSv1.3"
-    plugin_attr: {}
+    plugin_attr:
+      prometheus: {}
 
 ---
 apiVersion: apps/v1
