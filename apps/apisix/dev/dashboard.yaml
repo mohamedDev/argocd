@@ -51,7 +51,7 @@ spec:
       port: 2379
       targetPort: 2379
 
-# APISIX Configuration
+# APISIX ConfigMap
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -92,6 +92,7 @@ data:
     plugin_attr:
       prometheus: {}
 
+# APISIX Deployment
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -145,6 +146,7 @@ spec:
           configMap:
             name: apisix-config
 
+# APISIX Service
 ---
 apiVersion: v1
 kind: Service
@@ -167,6 +169,8 @@ spec:
       port: 9443
       targetPort: 9443
       nodePort: 30443
+
+# APISIX Dashboard ConfigMap
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -189,6 +193,7 @@ data:
         access_log:
           file_path: logs/access.log
 
+# APISIX Dashboard Deployment
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -213,6 +218,12 @@ spec:
             - name: dashboard-config
               mountPath: /usr/local/apisix-dashboard/conf/conf.yaml
               subPath: conf.yaml
+      volumes:
+        - name: dashboard-config
+          configMap:
+            name: apisix-dashboard-config
+
+# APISIX Dashboard Service
 ---
 apiVersion: v1
 kind: Service
