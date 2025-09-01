@@ -82,6 +82,7 @@ data:
     apisix:
       node_listen: 9080
       enable_ipv6: false
+    plugin_attr: {}
   config-default.yaml: |
     apisix:
       node_listen: 9080
@@ -162,6 +163,7 @@ data:
       - http-logger
       - file-logger
       - example-plugin
+    plugin_attr: {}
 
 ---
 apiVersion: apps/v1
@@ -222,13 +224,6 @@ spec:
           env:
             - name: APISIX_STAND_ALONE
               value: "false"
-            # Variables d'environnement pour forcer la config etcd
-            - name: APISIX_DEPLOYMENT_ETCD_HOST
-              value: "http://etcd-service:2379"
-            - name: APISIX_DEPLOYMENT_ETCD_PREFIX
-              value: "/apisix"
-            - name: APISIX_DEPLOYMENT_ETCD_TIMEOUT
-              value: "30"
           command: ["/bin/sh", "-c"]
           args:
             - |
