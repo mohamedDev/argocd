@@ -82,11 +82,11 @@ data:
     apisix:
       node_listen: 9080
       enable_ipv6: false
+      ssl:
+        enable: false
+        listen: 9443
+        ssl_protocols: "TLSv1.2 TLSv1.3"
     plugin_attr: {}
-    ssl:
-      enable: false
-      listen: 9443
-      ssl_protocols: "TLSv1.2 TLSv1.3"
   config-default.yaml: |
     apisix:
       node_listen: 9080
@@ -104,6 +104,10 @@ data:
       https_admin: false
       enable_server_tokens: true
       delete_uri_tail_slash: false
+      ssl:
+        enable: false
+        listen: 9443
+        ssl_protocols: "TLSv1.2 TLSv1.3"
     nginx_config:
       user: apisix
       worker_processes: auto
@@ -168,10 +172,6 @@ data:
       - file-logger
       - example-plugin
     plugin_attr: {}
-    ssl:
-      enable: false
-      listen: 9443
-      ssl_protocols: "TLSv1.2 TLSv1.3"
 
 ---
 apiVersion: apps/v1
