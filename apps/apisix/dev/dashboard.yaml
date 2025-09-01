@@ -1,3 +1,113 @@
+# etcd (backend pour stocker la config)
+apiVersion: v1
+kind: Service
+metadata:
+  name: etcd
+spec:
+  ports:
+    - port: 2379
+      name: client
+  selector:
+    app: etcd
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: etcd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: etcd
+  template:
+    metadata:
+      labels:
+        app: etcd
+    spec:
+      containers:
+        - name: etcd
+          image: bitnami/etcd:3.5.13
+          env:
+            - name: ALLOW_NONE_AUTHENTICATION
+              value: "yes"
+            - name: ETCD_ADVERTISE_CLIENT_URLS
+              value: "http://0.0.0.0:2379"
+            - name: ETCD_LISTEN_CLIENT_URLS
+              value: "http://0.0.0.0:2379"
+          ports:
+            - containerPort: 2379
+
+---
+# APISIX (gateway)
+apiVersion: v1
+kind: Service
+metadata:
+  name: apisix
+spec:
+  type: NodePort
+  ports:
+    - port: 80
+      targetPort: 9080
+      nodePort: 30080
+      name: http
+    - port: 443
+      targetPort: 9443
+      nodePort: 30443
+      name: https
+  selector:
+    app: apisix
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apisix
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: apisix
+  template:
+    metadata:
+      labels:
+        app: apisix
+    spec:
+      containers:
+        - name: apisix
+          image: apache/apisix:3.13.0-debian
+          ports:
+            - containerPort: 9080
+            - containerPort: 9443
+          volumeMounts:
+            - mountPath: /usr/local/apisix/conf/config.yaml
+              subPath: config.yaml
+              name: apisix-config
+      volumes:
+        - name: apisix-config
+          configMap:
+            name: apisix-config
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: apisix-config
+data:
+  config.yaml: |
+    deployment:
+      role: data_plane
+      role_data_plane:
+        config_provider: etcd
+    etcd:
+      host:
+        - "http://etcd:2379"
+    plugins:
+      - key-auth
+      - proxy-rewrite
+      - limit-count
+      - prometheus
+
+---
+# APISIX Dashboard (UI)
 apiVersion: v1
 kind: Service
 metadata:
@@ -10,6 +120,7 @@ spec:
       nodePort: 30900
   selector:
     app: apisix-dashboard
+
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -27,7 +138,7 @@ spec:
     spec:
       containers:
         - name: dashboard
-          image: apache/apisix-dashboard:3.0.1
+          image: apache/apisix-dashboard:3.0.1-alpine
           ports:
             - containerPort: 9000
           env:

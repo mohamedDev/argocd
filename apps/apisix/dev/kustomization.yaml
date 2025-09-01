@@ -1,4 +1,2 @@
 resources:
-    - etcd.yaml
-    - apisix.yaml
     - dashboard.yaml
