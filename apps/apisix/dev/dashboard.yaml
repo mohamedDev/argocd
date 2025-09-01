@@ -167,3 +167,66 @@ spec:
       port: 9443
       targetPort: 9443
       nodePort: 30443
+---
+# APISIX Dashboard ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: apisix-dashboard-config
+data:
+  conf.yaml: |
+    conf:
+      listen:
+        host: 0.0.0.0
+        port: 9000
+      etcd:
+        endpoints:
+          - etcd-service:2379
+        prefix: "/apisix"
+      log:
+        error_log:
+          level: warn
+          file_path: logs/error.log
+        access_log:
+          file_path: logs/access.log
+
+---
+# APISIX Dashboard Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: apisix-dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: apisix-dashboard
+  template:
+    metadata:
+      labels:
+        app: apisix-dashboard
+    spec:
+      containers:
+        - name: apisix-dashboard
+          image: apache/apisix-dashboard:3.0.1-alpine
+          ports:
+            - containerPort: 9000
+          volumeMounts:
+            - name: dashboard-config
+              mountPath: /usr/local/apisix-dashboard/conf/conf.yaml
+              subPath: conf.yaml
+---
+# APISIX Dashboard Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: apisix-dashboard-service
+spec:
+  selector:
+    app: apisix-dashboard
+  type: NodePort
+  ports:
+    - name: dashboard
+      port: 9000
+      targetPort: 9000
+      nodePort: 30000
