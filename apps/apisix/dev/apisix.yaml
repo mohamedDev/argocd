@@ -1,22 +1,5 @@
 # ETCD - Base de données pour APISIX
 ---
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: etcd-config
-data:
-  etcd.conf.yml: |
-    name: etcd
-    data-dir: /etcd-data
-    listen-client-urls: http://0.0.0.0:2379
-    advertise-client-urls: http://0.0.0.0:2379
-    listen-peer-urls: http://0.0.0.0:2380
-    initial-advertise-peer-urls: http://0.0.0.0:2380
-    initial-cluster: etcd=http://0.0.0.0:2380
-    initial-cluster-token: etcd-cluster
-    initial-cluster-state: new
-
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -32,25 +15,28 @@ spec:
         app: etcd
     spec:
       containers:
-      - name: etcd
-        image: quay.io/coreos/etcd:v3.5.4
-        command:
-          - etcd
-          - --config-file=/etc/etcd/etcd.conf.yml
-        ports:
-        - containerPort: 2379
-        - containerPort: 2380
-        volumeMounts:
-        - name: etcd-config
-          mountPath: /etc/etcd
-        - name: etcd-data
-          mountPath: /etcd-data
+        - name: etcd
+          image: quay.io/coreos/etcd:v3.5.4
+          command:
+            - etcd
+            - --name=etcd0
+            - --data-dir=/etcd-data
+            - --listen-client-urls=http://0.0.0.0:2379
+            - --advertise-client-urls=http://0.0.0.0:2379
+            - --listen-peer-urls=http://0.0.0.0:2380
+            - --initial-advertise-peer-urls=http://0.0.0.0:2380
+            - --initial-cluster=etcd0=http://0.0.0.0:2380
+            - --initial-cluster-token=etcd-cluster-1
+            - --initial-cluster-state=new
+          ports:
+            - containerPort: 2379
+            - containerPort: 2380
+          volumeMounts:
+            - name: etcd-data
+              mountPath: /etcd-data
       volumes:
-      - name: etcd-config
-        configMap:
-          name: etcd-config
-      - name: etcd-data
-        emptyDir: {}
+        - name: etcd-data
+          emptyDir: {}
 
 ---
 apiVersion: v1
@@ -61,14 +47,11 @@ spec:
   selector:
     app: etcd
   ports:
-  - name: client
-    port: 2379
-    targetPort: 2379
-  - name: peer
-    port: 2380
-    targetPort: 2380
+    - name: client
+      port: 2379
+      targetPort: 2379
 
-# APISIX Configuration
+# APISIX Configuration - Version simplifiée
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -76,52 +59,29 @@ metadata:
   name: apisix-config
 data:
   config.yaml: |
-    #
-    # Licensed to the Apache Software Foundation (ASF) under one or more
-    # contributor license agreements.  See the NOTICE file distributed with
-    # this work for additional information regarding copyright ownership.
-    # The ASF licenses this file to You under the Apache License, Version 2.0
-    # (the "License"); you may not use this file except in compliance with
-    # the License.  You may obtain a copy of the License at
-    #
-    #     http://www.apache.org/licenses/LICENSE-2.0
-    #
-    # Unless required by applicable law or agreed to in writing, software
-    # distributed under the License is distributed on an "AS IS" BASIS,
-    # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-    # See the License for the specific language governing permissions and
-    # limitations under the License.
-    #
-    
-    apisix:
-      node_listen: 9080                # APISIX listening port
-      enable_ipv6: false
-    
-      enable_control: true
-      control:
-        ip: "0.0.0.0"
-        port: 9092
-    
     deployment:
       role: traditional
       role_traditional:
         config_provider: etcd
-    
+      etcd:
+        host:
+          - "http://etcd-service:2379"
+        prefix: "/apisix"
+        timeout: 30
       admin:
         admin_key:
           - name: "admin"
             key: edd1c9f034335f136f87ad84b625c8f1
             role: admin
         enable_admin_cors: true
+        allow_admin:
+          - 0.0.0.0/0
         admin_listen:
           ip: 0.0.0.0
           port: 9180
-    
-    etcd:
-      host:
-        - "http://etcd-service:2379"  # it's possible to define multiple etcd hosts addresses of the same etcd cluster.
-      prefix: "/apisix"               # apisix configurations prefix
-      timeout: 30                     # 30 seconds
+    apisix:
+      node_listen: 9080
+      enable_ipv6: false
 
 ---
 apiVersion: apps/v1
@@ -139,29 +99,37 @@ spec:
         app: apisix
     spec:
       initContainers:
-      - name: wait-for-etcd
-        image: busybox:1.35
-        command: ['sh', '-c', 'until nc -z etcd-service 2379; do echo waiting for etcd; sleep 2; done;']
+        - name: wait-for-etcd
+          image: busybox:1.35
+          command:
+            [
+              "sh",
+              "-c",
+              "until nc -z etcd-service 2379; do echo waiting for etcd; sleep 2; done;",
+            ]
       containers:
-      - name: apisix
-        image: apache/apisix:3.6.0-debian
-        ports:
-        - containerPort: 9080
-        - containerPort: 9180
-        - containerPort: 9092
-        volumeMounts:
-        - name: apisix-config
-          mountPath: /usr/local/apisix/conf/config.yaml
-          subPath: config.yaml
-        env:
-        - name: APISIX_STAND_ALONE
-          value: "false"
-        command: ["/bin/bash"]
-        args: ["-c", "cd /usr/local/apisix && /usr/local/openresty/luajit/bin/luajit ./apisix/cli/apisix.lua init && /usr/local/openresty/luajit/bin/luajit ./apisix/cli/apisix.lua init_etcd && exec /usr/local/openresty/luajit/bin/luajit ./apisix/cli/apisix.lua start"]
+        - name: apisix
+          image: apache/apisix:3.2.0-debian
+          ports:
+            - containerPort: 9080
+            - containerPort: 9180
+          volumeMounts:
+            - name: apisix-config
+              mountPath: /usr/local/apisix/conf/config.yaml
+              subPath: config.yaml
+          env:
+            - name: APISIX_STAND_ALONE
+              value: "false"
+          command: ["/bin/bash"]
+          args:
+            [
+              "-c",
+              "sleep 5 && /usr/local/apisix/bin/apisix init && /usr/local/apisix/bin/apisix init_etcd && /usr/local/apisix/bin/apisix start -c /usr/local/apisix/conf/config.yaml",
+            ]
       volumes:
-      - name: apisix-config
-        configMap:
-          name: apisix-config
+        - name: apisix-config
+          configMap:
+            name: apisix-config
 
 ---
 apiVersion: v1
@@ -173,14 +141,14 @@ spec:
     app: apisix
   type: NodePort
   ports:
-  - name: gateway
-    port: 9080
-    targetPort: 9080
-    nodePort: 30080
-  - name: admin
-    port: 9180
-    targetPort: 9180
-    nodePort: 30180
+    - name: gateway
+      port: 9080
+      targetPort: 9080
+      nodePort: 30080
+    - name: admin
+      port: 9180
+      targetPort: 9180
+      nodePort: 30180
 
 # APISIX Dashboard
 ---
@@ -198,19 +166,12 @@ data:
         endpoints:
           - etcd-service:2379
         prefix: "/apisix"
-        mtls:
-          key_file: ""
-          cert_file: ""
-          ca_file: ""
       log:
         error_log:
           level: warn
           file_path: logs/error.log
         access_log:
           file_path: logs/access.log
-      max_cpu: 0
-      security:
-        content_security_policy: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; frame-src *"
 
 ---
 apiVersion: apps/v1
@@ -228,21 +189,18 @@ spec:
         app: apisix-dashboard
     spec:
       containers:
-      - name: apisix-dashboard
-        image: apache/apisix-dashboard:3.0.1-alpine
-        ports:
-        - containerPort: 9000
-        volumeMounts:
-        - name: dashboard-config
-          mountPath: /usr/local/apisix-dashboard/conf/conf.yaml
-          subPath: conf.yaml
-        env:
-        - name: APISIX_DASHBOARD_VERSION
-          value: "3.0.1"
+        - name: apisix-dashboard
+          image: apache/apisix-dashboard:3.0.1-alpine
+          ports:
+            - containerPort: 9000
+          volumeMounts:
+            - name: dashboard-config
+              mountPath: /usr/local/apisix-dashboard/conf/conf.yaml
+              subPath: conf.yaml
       volumes:
-      - name: dashboard-config
-        configMap:
-          name: apisix-dashboard-config
+        - name: dashboard-config
+          configMap:
+            name: apisix-dashboard-config
 
 ---
 apiVersion: v1
@@ -254,12 +212,12 @@ spec:
     app: apisix-dashboard
   type: NodePort
   ports:
-  - name: dashboard
-    port: 9000
-    targetPort: 9000
-    nodePort: 30000
+    - name: dashboard
+      port: 9000
+      targetPort: 9000
+      nodePort: 30000
 
-# Service de test simple (optionnel)
+# Service de test simple
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -276,10 +234,10 @@ spec:
         app: test-backend
     spec:
       containers:
-      - name: httpbin
-        image: kennethreitz/httpbin
-        ports:
-        - containerPort: 80
+        - name: httpbin
+          image: kennethreitz/httpbin
+          ports:
+            - containerPort: 80
 
 ---
 apiVersion: v1
@@ -290,6 +248,6 @@ spec:
   selector:
     app: test-backend
   ports:
-  - name: http
-    port: 80
-    targetPort: 80
+    - name: http
+      port: 80
+      targetPort: 80
