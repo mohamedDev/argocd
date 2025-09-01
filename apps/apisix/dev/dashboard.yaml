@@ -85,7 +85,7 @@ data:
       ssl:
         enable: false
         listen:
-          - 9443
+          - port: 9443
         ssl_protocols: "TLSv1.2 TLSv1.3"
     plugin_attr: {}
   config-default.yaml: |
@@ -108,7 +108,7 @@ data:
       ssl:
         enable: false
         listen:
-          - 9443
+          - port: 9443
         ssl_protocols: "TLSv1.2 TLSv1.3"
     nginx_config:
       user: apisix
