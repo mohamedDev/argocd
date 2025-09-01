@@ -168,7 +168,6 @@ spec:
       targetPort: 9443
       nodePort: 30443
 ---
-# APISIX Dashboard ConfigMap
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -191,7 +190,6 @@ data:
           file_path: logs/access.log
 
 ---
-# APISIX Dashboard Deployment
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -216,7 +214,6 @@ spec:
               mountPath: /usr/local/apisix-dashboard/conf/conf.yaml
               subPath: conf.yaml
 ---
-# APISIX Dashboard Service
 apiVersion: v1
 kind: Service
 metadata:
