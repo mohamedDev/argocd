@@ -85,6 +85,9 @@ data:
         port: 9092
     
     deployment:
+      role: traditional
+      role_traditional:
+        config_provider: etcd
       admin:
         admin_key:
           - name: "admin"
