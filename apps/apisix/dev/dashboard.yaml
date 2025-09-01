@@ -15,28 +15,28 @@ spec:
         app: etcd
     spec:
       containers:
-      - name: etcd
-        image: quay.io/coreos/etcd:v3.5.4
-        command:
-          - etcd
-          - --name=etcd0
-          - --data-dir=/etcd-data
-          - --listen-client-urls=http://0.0.0.0:2379
-          - --advertise-client-urls=http://0.0.0.0:2379
-          - --listen-peer-urls=http://0.0.0.0:2380
-          - --initial-advertise-peer-urls=http://0.0.0.0:2380
-          - --initial-cluster=etcd0=http://0.0.0.0:2380
-          - --initial-cluster-token=etcd-cluster-1
-          - --initial-cluster-state=new
-        ports:
-        - containerPort: 2379
-        - containerPort: 2380
-        volumeMounts:
-        - name: etcd-data
-          mountPath: /etcd-data
+        - name: etcd
+          image: quay.io/coreos/etcd:v3.5.4
+          command:
+            - etcd
+            - --name=etcd0
+            - --data-dir=/etcd-data
+            - --listen-client-urls=http://0.0.0.0:2379
+            - --advertise-client-urls=http://0.0.0.0:2379
+            - --listen-peer-urls=http://0.0.0.0:2380
+            - --initial-advertise-peer-urls=http://0.0.0.0:2380
+            - --initial-cluster=etcd0=http://0.0.0.0:2380
+            - --initial-cluster-token=etcd-cluster-1
+            - --initial-cluster-state=new
+          ports:
+            - containerPort: 2379
+            - containerPort: 2380
+          volumeMounts:
+            - name: etcd-data
+              mountPath: /etcd-data
       volumes:
-      - name: etcd-data
-        emptyDir: {}
+        - name: etcd-data
+          emptyDir: {}
 
 ---
 apiVersion: v1
@@ -47,9 +47,9 @@ spec:
   selector:
     app: etcd
   ports:
-  - name: client
-    port: 2379
-    targetPort: 2379
+    - name: client
+      port: 2379
+      targetPort: 2379
 
 # APISIX Configuration - Version complète
 ---
@@ -63,6 +63,11 @@ data:
       role: traditional
       role_traditional:
         config_provider: etcd
+        etcd:
+          host:
+            - "http://etcd-service:2379"
+          prefix: "/apisix"
+          timeout: 30
       admin:
         admin_key:
           - name: "admin"
@@ -84,11 +89,6 @@ data:
     nginx_config:
       error_log: "/usr/local/apisix/logs/error.log"
       access_log: "/usr/local/apisix/logs/access.log"
-    etcd:
-      host:
-        - "http://etcd-service:2379"
-      prefix: "/apisix"
-      timeout: 30
   config-default.yaml: |
     apisix:
       node_listen: 9080
@@ -186,86 +186,82 @@ spec:
         app: apisix
     spec:
       initContainers:
-      - name: wait-for-etcd
-        image: busybox:1.35
-        command: ['sh', '-c']
-        args:
-        - |
-          echo "Waiting for etcd to be ready..."
-          until nc -z etcd-service 2379; do 
-            echo "Waiting for etcd-service:2379..."
-            sleep 2
-          done
-          echo "ETCD is ready!"
-      - name: setup-config
-        image: apache/apisix:3.2.0-debian
-        command: ['sh', '-c']
-        args:
-        - |
-          echo "Copying default config files..."
-          cp -r /usr/local/apisix/conf/* /tmp/apisix-conf/
-          echo "Config setup complete"
-        volumeMounts:
-        - name: apisix-conf-temp
-          mountPath: /tmp/apisix-conf
+        - name: wait-for-etcd
+          image: busybox:1.35
+          command: ["sh", "-c"]
+          args:
+            - |
+              echo "Waiting for etcd to be ready..."
+              until nc -z etcd-service 2379; do 
+                echo "Waiting for etcd-service:2379..."
+                sleep 2
+              done
+              echo "ETCD is ready!"
+        - name: setup-config
+          image: apache/apisix:3.2.0-debian
+          command: ["sh", "-c"]
+          args:
+            - |
+              echo "Copying default config files..."
+              cp -r /usr/local/apisix/conf/* /tmp/apisix-conf/
+              echo "Config setup complete"
+          volumeMounts:
+            - name: apisix-conf-temp
+              mountPath: /tmp/apisix-conf
       containers:
-      - name: apisix
-        image: apache/apisix:3.2.0-debian
-        ports:
-        - containerPort: 9080
-        - containerPort: 9180
-        - containerPort: 9092
-        volumeMounts:
-        - name: apisix-conf-temp
-          mountPath: /usr/local/apisix/conf
-        - name: apisix-config
-          mountPath: /usr/local/apisix/conf/config.yaml
-          subPath: config.yaml
-        - name: apisix-config
-          mountPath: /usr/local/apisix/conf/config-default.yaml
-          subPath: config-default.yaml
-        - name: apisix-logs
-          mountPath: /usr/local/apisix/logs
-        env:
-        - name: APISIX_STAND_ALONE
-          value: "false"
-        # Variables d'environnement pour forcer la config etcd
-        - name: APISIX_DEPLOYMENT_ETCD_HOST
-          value: "http://etcd-service:2379"
-        - name: APISIX_DEPLOYMENT_ETCD_PREFIX
-          value: "/apisix"
-        - name: APISIX_DEPLOYMENT_ETCD_TIMEOUT
-          value: "30"
-        command: ["/bin/sh", "-c"]
-        args:
-        - |
-          echo "Starting APISIX initialization..."
-          cd /usr/local/apisix
-          
-          # Modifie directement le config-default.yaml pour pointer vers etcd-service
-          echo "Updating etcd configuration in config-default.yaml..."
-          sed -i 's|http://127.0.0.1:2379|http://etcd-service:2379|g' /usr/local/apisix/conf/config-default.yaml
-          
-          echo "Etcd config in config-default.yaml:"
-          grep -A 10 "^etcd:" /usr/local/apisix/conf/config-default.yaml
-          
-          echo "Custom config.yaml content:"
-          cat conf/config.yaml | head -20
-          
-          echo "Running init..."
-          /usr/local/openresty/luajit/bin/luajit ./apisix/cli/apisix.lua init
-          echo "Running init_etcd..."
-          /usr/local/openresty/luajit/bin/luajit ./apisix/cli/apisix.lua init_etcd
-          echo "Starting APISIX..."
-          exec /usr/local/openresty/luajit/bin/luajit ./apisix/cli/apisix.lua start
+        - name: apisix
+          image: apache/apisix:3.2.0-debian
+          ports:
+            - containerPort: 9080
+            - containerPort: 9180
+            - containerPort: 9092
+          volumeMounts:
+            - name: apisix-conf-temp
+              mountPath: /usr/local/apisix/conf
+            - name: apisix-config
+              mountPath: /usr/local/apisix/conf/config.yaml
+              subPath: config.yaml
+            - name: apisix-config
+              mountPath: /usr/local/apisix/conf/config-default.yaml
+              subPath: config-default.yaml
+            - name: apisix-logs
+              mountPath: /usr/local/apisix/logs
+          env:
+            - name: APISIX_STAND_ALONE
+              value: "false"
+            # Variables d'environnement pour forcer la config etcd
+            - name: APISIX_DEPLOYMENT_ETCD_HOST
+              value: "http://etcd-service:2379"
+            - name: APISIX_DEPLOYMENT_ETCD_PREFIX
+              value: "/apisix"
+            - name: APISIX_DEPLOYMENT_ETCD_TIMEOUT
+              value: "30"
+          command: ["/bin/sh", "-c"]
+          args:
+            - |
+              echo "Starting APISIX initialization..."
+              cd /usr/local/apisix
+
+              echo "Custom config.yaml content:"
+              cat conf/config.yaml
+
+              echo "Testing etcd connectivity..."
+              nc -zv etcd-service 2379 || echo "Cannot connect to etcd-service:2379"
+
+              echo "Running init..."
+              /usr/local/openresty/luajit/bin/luajit ./apisix/cli/apisix.lua init
+              echo "Running init_etcd..."
+              /usr/local/openresty/luajit/bin/luajit ./apisix/cli/apisix.lua init_etcd
+              echo "Starting APISIX..."
+              exec /usr/local/openresty/luajit/bin/luajit ./apisix/cli/apisix.lua start
       volumes:
-      - name: apisix-config
-        configMap:
-          name: apisix-config
-      - name: apisix-conf-temp
-        emptyDir: {}
-      - name: apisix-logs
-        emptyDir: {}
+        - name: apisix-config
+          configMap:
+            name: apisix-config
+        - name: apisix-conf-temp
+          emptyDir: {}
+        - name: apisix-logs
+          emptyDir: {}
 
 ---
 apiVersion: v1
@@ -277,14 +273,14 @@ spec:
     app: apisix
   type: NodePort
   ports:
-  - name: gateway
-    port: 9080
-    targetPort: 9080
-    nodePort: 30080
-  - name: admin
-    port: 9180
-    targetPort: 9180
-    nodePort: 30180
+    - name: gateway
+      port: 9080
+      targetPort: 9080
+      nodePort: 30080
+    - name: admin
+      port: 9180
+      targetPort: 9180
+      nodePort: 30180
 
 # APISIX Dashboard
 ---
@@ -325,18 +321,18 @@ spec:
         app: apisix-dashboard
     spec:
       containers:
-      - name: apisix-dashboard
-        image: apache/apisix-dashboard:3.0.1-alpine
-        ports:
-        - containerPort: 9000
-        volumeMounts:
-        - name: dashboard-config
-          mountPath: /usr/local/apisix-dashboard/conf/conf.yaml
-          subPath: conf.yaml
+        - name: apisix-dashboard
+          image: apache/apisix-dashboard:3.0.1-alpine
+          ports:
+            - containerPort: 9000
+          volumeMounts:
+            - name: dashboard-config
+              mountPath: /usr/local/apisix-dashboard/conf/conf.yaml
+              subPath: conf.yaml
       volumes:
-      - name: dashboard-config
-        configMap:
-          name: apisix-dashboard-config
+        - name: dashboard-config
+          configMap:
+            name: apisix-dashboard-config
 
 ---
 apiVersion: v1
@@ -348,10 +344,10 @@ spec:
     app: apisix-dashboard
   type: NodePort
   ports:
-  - name: dashboard
-    port: 9000
-    targetPort: 9000
-    nodePort: 30000
+    - name: dashboard
+      port: 9000
+      targetPort: 9000
+      nodePort: 30000
 
 # Service de test simple
 ---
@@ -370,10 +366,10 @@ spec:
         app: test-backend
     spec:
       containers:
-      - name: httpbin
-        image: kennethreitz/httpbin
-        ports:
-        - containerPort: 80
+        - name: httpbin
+          image: kennethreitz/httpbin
+          ports:
+            - containerPort: 80
 
 ---
 apiVersion: v1
@@ -384,6 +380,6 @@ spec:
   selector:
     app: test-backend
   ports:
-  - name: http
-    port: 80
-    targetPort: 80
+    - name: http
+      port: 80
+      targetPort: 80
