@@ -76,9 +76,27 @@ metadata:
   name: apisix-config
 data:
   config.yaml: |
+    #
+    # Licensed to the Apache Software Foundation (ASF) under one or more
+    # contributor license agreements.  See the NOTICE file distributed with
+    # this work for additional information regarding copyright ownership.
+    # The ASF licenses this file to You under the Apache License, Version 2.0
+    # (the "License"); you may not use this file except in compliance with
+    # the License.  You may obtain a copy of the License at
+    #
+    #     http://www.apache.org/licenses/LICENSE-2.0
+    #
+    # Unless required by applicable law or agreed to in writing, software
+    # distributed under the License is distributed on an "AS IS" BASIS,
+    # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    # See the License for the specific language governing permissions and
+    # limitations under the License.
+    #
+    
     apisix:
-      node_listen: 9080
+      node_listen: 9080                # APISIX listening port
       enable_ipv6: false
+    
       enable_control: true
       control:
         ip: "0.0.0.0"
@@ -88,6 +106,7 @@ data:
       role: traditional
       role_traditional:
         config_provider: etcd
+    
       admin:
         admin_key:
           - name: "admin"
@@ -100,9 +119,9 @@ data:
     
     etcd:
       host:
-        - "http://etcd-service:2379"
-      prefix: "/apisix"
-      timeout: 30
+        - "http://etcd-service:2379"  # it's possible to define multiple etcd hosts addresses of the same etcd cluster.
+      prefix: "/apisix"               # apisix configurations prefix
+      timeout: 30                     # 30 seconds
 
 ---
 apiVersion: apps/v1
@@ -119,6 +138,10 @@ spec:
       labels:
         app: apisix
     spec:
+      initContainers:
+      - name: wait-for-etcd
+        image: busybox:1.35
+        command: ['sh', '-c', 'until nc -z etcd-service 2379; do echo waiting for etcd; sleep 2; done;']
       containers:
       - name: apisix
         image: apache/apisix:3.6.0-debian
@@ -133,6 +156,8 @@ spec:
         env:
         - name: APISIX_STAND_ALONE
           value: "false"
+        command: ["/bin/bash"]
+        args: ["-c", "cd /usr/local/apisix && /usr/local/openresty/luajit/bin/luajit ./apisix/cli/apisix.lua init && /usr/local/openresty/luajit/bin/luajit ./apisix/cli/apisix.lua init_etcd && exec /usr/local/openresty/luajit/bin/luajit ./apisix/cli/apisix.lua start"]
       volumes:
       - name: apisix-config
         configMap:
