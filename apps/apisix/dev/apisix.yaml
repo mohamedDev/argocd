@@ -59,17 +59,16 @@ data:
     etcd:
       host:
         - "http://etcd:2379"
-      prefix: "/apisix" 
+      prefix: "/apisix"    # <<< OBLIGATOIRE
       timeout: 30
-
-    plugins:  # activer les plugins nécessaires
-      - key-auth
-      - proxy-rewrite
-      - limit-count
-      - prometheus
 
     nginx_config:
       worker_processes: "auto"
       error_log: "logs/error.log"
       http:
         access_log: "logs/access.log"
+
+    plugins:
+      - key-auth
+      - limit-count
+      - prometheus
