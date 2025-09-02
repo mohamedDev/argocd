@@ -1,6 +1,4 @@
-# ======================
-# ETCD Deployment & Service
-# ======================
+# ===================== ETCD =====================
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -25,8 +23,8 @@ spec:
             - --listen-client-urls=http://0.0.0.0:2379
             - --advertise-client-urls=http://etcd-service:2379
             - --listen-peer-urls=http://0.0.0.0:2380
-            - --initial-advertise-peer-urls=http://0.0.0.0:2380
-            - --initial-cluster=etcd0=http://0.0.0.0:2380
+            - --initial-advertise-peer-urls=http://etcd-service:2380
+            - --initial-cluster=etcd0=http://etcd-service:2380
             - --initial-cluster-token=etcd-cluster-1
             - --initial-cluster-state=new
           ports:
@@ -51,10 +49,11 @@ spec:
     - name: client
       port: 2379
       targetPort: 2379
+    - name: peer
+      port: 2380
+      targetPort: 2380
 
-# ======================
-# APISIX ConfigMap
-# ======================
+# ===================== APISIX =====================
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -83,6 +82,7 @@ data:
           - name: "admin"
             key: "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6"
             role: admin
+        port_admin: 9180
     apisix:
       node_listen: 9080
       enable_ipv6: false
@@ -94,9 +94,6 @@ data:
     plugin_attr:
       prometheus: {}
 
-# ======================
-# APISIX Deployment & Service
-# ======================
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -163,19 +160,17 @@ spec:
     - name: gateway
       port: 9080
       targetPort: 9080
-      nodePort: 30081
+      nodePort: 31080
     - name: admin
       port: 9180
       targetPort: 9180
-      nodePort: 30181
+      nodePort: 31180
     - name: ssl
       port: 9443
       targetPort: 9443
-      nodePort: 30444
+      nodePort: 31443
 
-# ======================
-# APISIX Dashboard ConfigMap
-# ======================
+# ===================== APISIX Dashboard =====================
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -197,18 +192,15 @@ data:
           file_path: logs/error.log
         access_log:
           file_path: logs/access.log
-      authentication:
-        secret: "your-secret-key"   # clé utilisée pour signer les tokens JWT
-        expire_time: 3600           # durée de validité du token en secondes
-        users:
-          - username: "admin"
-            password: "admin123"    # change ça pour plus sécurisé
-          - username: "reader"
-            password: "reader123"
+    authentication:
+      secret: "your-secret-key"
+      expire_time: 3600
+      users:
+        - username: "admin"
+          password: "admin123"
+        - username: "reader"
+          password: "reader123"
 
-# ======================
-# APISIX Dashboard Deployment & Service
-# ======================
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -226,7 +218,7 @@ spec:
     spec:
       containers:
         - name: apisix-dashboard
-          image: apache/apisix-dashboard:3.0.1-alpine
+          image: apache/apisix-dashboard:3.1.0
           ports:
             - containerPort: 9000
           volumeMounts:
@@ -251,4 +243,4 @@ spec:
     - name: dashboard
       port: 9000
       targetPort: 9000
-      nodePort: 30001
+      nodePort: 32000
