@@ -197,6 +197,14 @@ data:
           file_path: logs/error.log
         access_log:
           file_path: logs/access.log
+      authentication:
+        secret: "your-secret-key"   # clé utilisée pour signer les tokens JWT
+        expire_time: 3600           # durée de validité du token en secondes
+        users:
+          - username: "admin"
+            password: "admin123"    # change ça pour plus sécurisé
+          - username: "reader"
+            password: "reader123"
 
 # ======================
 # APISIX Dashboard Deployment & Service
