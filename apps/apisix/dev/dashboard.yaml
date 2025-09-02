@@ -218,7 +218,7 @@ spec:
     spec:
       containers:
         - name: apisix-dashboard
-          image: apache/apisix-dashboard:3.1.0
+          image: apache/apisix-dashboard:latest
           ports:
             - containerPort: 9000
           volumeMounts:
