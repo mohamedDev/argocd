@@ -11,7 +11,7 @@ spec:
     path: charts/my-nginx
     helm:
       valueFiles:
-        - ../../app/nginx/dev/values.yaml   # chemin relatif à charts/my-nginx
+        - ../../apps/nginx/dev/values.yaml   # chemin relatif à charts/my-nginx
   destination:
     server: 'https://kubernetes.default.svc'
     namespace: nginx-test-dev
