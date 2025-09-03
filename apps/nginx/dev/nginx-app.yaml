@@ -6,16 +6,18 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: 'https://github.com/mohamedDev/argocd.git'  # Remplace par ton repo
+    repoURL: 'https://github.com/ton-utilisateur/ton-repo.git'
     targetRevision: HEAD
     path: charts/my-nginx
     helm:
       valueFiles:
-        - ../../apps/nginx/dev/values.yaml   # chemin relatif à charts/my-nginx
+        - ../../apps/nginx/dev/values.yaml
   destination:
     server: 'https://kubernetes.default.svc'
-    namespace: nginx-test-dev
+    namespace: nginx-test-dev    # 👈 le namespace cible
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
+    syncOptions:
+      - CreateNamespace=true     # 👈 ArgoCD créera le namespace si absent
