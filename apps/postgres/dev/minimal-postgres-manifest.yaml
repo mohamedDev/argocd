@@ -1,0 +1,30 @@
+apiVersion: "acid.zalan.do/v1"
+kind: postgresql
+metadata:
+  name: postgres
+spec:
+  dockerImage: thegrandpkizzle/spilo-15:3.0-p1.15
+  teamId: "med"
+  volume:
+    size: 5Gi
+  numberOfInstances: 2
+  users:
+    mldsadmin:
+      - superuser
+      - createdb
+  databases:
+    mlflow: mldsadmin
+  postgresql:
+    version: "15"
+    parameters:
+      max_connections: "300"
+      idle_in_transaction_session_timeout: "300000" # 5 minutes
+      statement_timeout: "600000" # 10 minutes
+  
+  resources:
+    requests:
+      cpu: "1"
+      memory: 2Gi
+    limits:
+      cpu: "2"
+      memory: 4Gi
