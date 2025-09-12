@@ -20,7 +20,7 @@ spec:
       max_connections: "300"
       idle_in_transaction_session_timeout: "300000" # 5 minutes
       statement_timeout: "600000" # 10 minutes
-  
+
   resources:
     requests:
       cpu: "1"
@@ -28,3 +28,24 @@ spec:
     limits:
       cpu: "2"
       memory: 4Gi
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:latest
+          ports:
+            - containerPort: 80
