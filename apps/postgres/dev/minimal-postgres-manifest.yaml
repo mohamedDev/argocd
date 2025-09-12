@@ -21,6 +21,21 @@ spec:
       idle_in_transaction_session_timeout: "300000" # 5 minutes
       statement_timeout: "600000" # 10 minutes
 
+  patroni:
+    initdb:
+      encoding: "UTF8"
+      locale: "en_US.UTF-8"
+    pg_hba:
+      # Connexions locales
+      - local all all trust
+      # Connexions depuis le cluster (avec et sans SSL)
+      - host all all 10.0.0.0/8 md5
+      - hostssl all all 10.0.0.0/8 md5
+      - hostnossl all all 10.0.0.0/8 md5
+      # Réplication
+      - host replication +zalandos samenet trust
+      - hostssl replication +zalandos samenet trust
+
   resources:
     requests:
       cpu: "1"
