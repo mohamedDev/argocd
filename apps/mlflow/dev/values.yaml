@@ -19,7 +19,7 @@ backendStore:
     password: ""
     driver: ""
   existingDatabaseSecret:
-    name: "mldsadmin.postgres.credentials.postgresql.acid.zalan.do"
+    name: "postgres-credentials"
     usernameKey: "username"
     passwordKey: "password"
 
