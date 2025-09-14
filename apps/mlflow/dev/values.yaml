@@ -52,9 +52,16 @@ artifactRoot:
 
 # Configuration de l'endpoint MinIO via extraEnvVars
 extraEnvVars:
-  MLFLOW_S3_ENDPOINT_URL: "http://minio-service.minio-dev.svc.cluster.local:9000"
-  AWS_DEFAULT_REGION: "us-east-1"
-  MLFLOW_S3_IGNORE_TLS: true
+  - name: MLFLOW_S3_ENDPOINT_URL
+    value: "http://minio-service.minio-dev.svc.cluster.local:9000"
+  - name: AWS_DEFAULT_REGION
+    value: "us-east-1"
+  - name: MLFLOW_S3_IGNORE_TLS
+    value: "true"
+  - name: AWS_ACCESS_KEY_ID
+    value: "minioadmin"
+  - name: AWS_SECRET_ACCESS_KEY
+    value: "minioadmin"
 
 serviceAccount:
   create: false
