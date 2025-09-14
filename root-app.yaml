@@ -19,6 +19,8 @@ spec:
         repoURL: https://github.com/mohamedDev/argocd.git
         targetRevision: main
         path: "{{path}}" # Ex: apps/users-service/dev
+        kustomize:
+          buildOptions: "--enable-helm" # ← Ajouter cette ligne
       destination:
         server: https://kubernetes.default.svc
         namespace: "{{path[1]}}-{{path.basename}}" # Ex: users-service-dev
