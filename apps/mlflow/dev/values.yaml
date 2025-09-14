@@ -58,6 +58,7 @@ extraEnvVars:
   AWS_ACCESS_KEY_ID: "minioadmin"
   AWS_SECRET_ACCESS_KEY: "minioadmin"
   PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: "python"
+  GUNICORN_CMD_ARGS: "--timeout 300 --graceful-timeout 300 --keep-alive 120"
 
 serviceAccount:
   create: false
