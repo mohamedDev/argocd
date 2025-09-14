@@ -1,0 +1,61 @@
+backendStore:
+  databaseMigration: true
+  databaseConnectionCheck: false
+  postgres:
+    enabled: false
+    host: postgres-service.postgres-dev.svc.cluster.local
+    port: 5432
+    database: mlflow
+
+  existingDatabaseSecret:
+    name: "mldsadmin.postgres.credentials.postgresql.acid.zalan.do"
+    usernameKey: "username"
+    passwordKey: "password"
+
+artifactRoot:
+  gcs:
+    enabled: false # Désactivé car on utilise MinIO
+  s3:
+    enabled: true # MinIO est compatible S3
+    bucket: mlds-models-catalog-prod
+    path: "models"
+    # Configuration pour MinIO
+    endpointUrl: "http://minio-service:9000"
+    accessKeyId: "minioadmin"
+    secretAccessKey: "minioadmin"
+
+# Plus besoin de service account pour l'authentification GCP
+serviceAccount:
+  create: false # ou true si vous voulez un SA basique
+  # annotations supprimées car plus besoin d'IAM GCP
+  # name: optionnel
+
+serviceMonitor:
+  enabled: true
+  namespace: monitoring
+  interval: 30s
+  telemetryPath: /metrics
+  labels:
+    release: prometheus
+  timeout: 10s
+  targetLabels: []
+
+resources:
+  requests:
+    cpu: "500m"
+    memory: "1Gi"
+  limits:
+    cpu: "2"
+    memory: "4Gi"
+
+# Service pour accéder à l'interface MLflow
+service:
+  enabled: true
+  type: NodePort # Changé de ClusterIP à NodePort pour accès externe
+  port: 80
+  name: http
+  containerPort: 5000
+  containerPortName: mlflow
+  # Configuration NodePort
+  nodePort: 30500 # Port externe pour accéder à MLflow (http://<NODE-IP>:30500)
+  annotations: {}
