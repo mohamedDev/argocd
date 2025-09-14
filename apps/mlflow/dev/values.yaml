@@ -25,8 +25,8 @@ backendStore:
 
 artifactRoot:
   proxiedArtifactStorage: false
-  defaultArtifactRoot: "./mlruns"
-  defaultArtifactsDestination: "./mlartifacts"
+  defaultArtifactRoot: "s3://mlds-models-catalog-prod/models"
+  # defaultArtifactsDestination: "./mlartifacts"
   gcs:
     enabled: false
     bucket: ""
