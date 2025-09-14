@@ -57,6 +57,7 @@ extraEnvVars:
   MLFLOW_S3_IGNORE_TLS: true
   AWS_ACCESS_KEY_ID: "minioadmin"
   AWS_SECRET_ACCESS_KEY: "minioadmin"
+  PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION: "python"
 
 serviceAccount:
   create: false
