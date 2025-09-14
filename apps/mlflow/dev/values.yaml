@@ -48,14 +48,12 @@ resources:
     cpu: "2"
     memory: "4Gi"
 
-# Service pour accéder à l'interface MLflow
+# Configuration du service (NodePort n'est pas supporté selon le schéma)
 service:
   enabled: true
-  type: NodePort # Changé de ClusterIP à NodePort pour accès externe
-  port: 80
-  name: http
+  type: ClusterIP  # Seul ClusterIP est supporté selon le schéma
+  port: 5000
   containerPort: 5000
+  name: http
   containerPortName: mlflow
-  # Configuration NodePort
-  nodePort: 30500 # Port externe pour accéder à MLflow (http://<NODE-IP>:30500)
   annotations: {}
