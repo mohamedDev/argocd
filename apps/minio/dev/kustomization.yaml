@@ -3,3 +3,5 @@ resources:
   - service.yaml
 
     # - ingress.yaml  # si tu veux exposer le service à l'extérieur du cluster
+# Depuis un pod dans le même namespace : minio-service:9000
+# Depuis un pod dans un autre namespace : minio-service.votre-namespace.svc.cluster.local:9000

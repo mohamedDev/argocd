@@ -1,27 +1,30 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: grafana
-  namespace: monitoring
+  name: minio
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: grafana
+      app: minio
   template:
     metadata:
       labels:
-        app: grafana
+        app: minio
     spec:
       containers:
-        - name: grafana
-          image: grafana/grafana:latest
-          ports:
-            - containerPort: 3000
-          volumeMounts:
-            - name: config
-              mountPath: /etc/grafana/provisioning/datasources
-      volumes:
-        - name: config
-          configMap:
-            name: grafana-datasources
+      - name: minio
+        image: minio/minio:latest
+        args:
+        - server
+        - /data
+        - --console-address
+        - ":9001"
+        env:
+        - name: MINIO_ROOT_USER
+          value: "minioadmin"
+        - name: MINIO_ROOT_PASSWORD
+          value: "minioadmin"
+        ports:
+        - containerPort: 9000
+        - containerPort: 9001
