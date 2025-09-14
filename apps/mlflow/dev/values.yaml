@@ -1,44 +1,78 @@
 backendStore:
   databaseMigration: true
   databaseConnectionCheck: false
+  defaultSqlitePath: ":memory:"
   postgres:
-    enabled: false
+    enabled: true  # Activé pour utiliser PostgreSQL
     host: postgres-service.postgres-dev.svc.cluster.local
     port: 5432
     database: mlflow
-
+    user: ""  # Sera ignoré car on utilise existingDatabaseSecret
+    password: ""  # Sera ignoré car on utilise existingDatabaseSecret
+    driver: "psycopg2"  # Driver PostgreSQL
+  mysql:
+    enabled: false
+    host: ""
+    port: 3306
+    database: ""
+    user: ""
+    password: ""
+    driver: ""
   existingDatabaseSecret:
     name: "mldsadmin.postgres.credentials.postgresql.acid.zalan.do"
     usernameKey: "username"
     passwordKey: "password"
 
 artifactRoot:
+  proxiedArtifactStorage: false
+  defaultArtifactRoot: "./mlruns"
+  defaultArtifactsDestination: "./mlartifacts"
   gcs:
-    enabled: false # Désactivé car on utilise MinIO
+    enabled: false
+    bucket: ""
+    path: ""
   s3:
-    enabled: true # MinIO est compatible S3
+    enabled: true
     bucket: mlds-models-catalog-prod
     path: "models"
-    # Configuration pour MinIO
-    endpointUrl: "http://minio-service:9000"
-    accessKeyId: "minioadmin"
-    secretAccessKey: "minioadmin"
+    # Propriétés correctes selon le schéma
+    awsAccessKeyId: "minioadmin"
+    awsSecretAccessKey: "minioadmin"
+    existingSecret:
+      name: ""
+      keyOfAccessKeyId: ""
+      keyOfSecretAccessKey: ""
+  azureBlob:
+    enabled: false
+    container: ""
+    storageAccount: ""
+    path: ""
+    connectionString: ""
+    accessKey: ""
 
-# Plus besoin de service account pour l'authentification GCP
+# Configuration de l'endpoint MinIO via extraEnvVars
+extraEnvVars:
+  MLFLOW_S3_ENDPOINT_URL: "http://minio-service:9000"
+  AWS_DEFAULT_REGION: "us-east-1"
+  MLFLOW_S3_IGNORE_TLS: true
+
 serviceAccount:
-  create: false # ou true si vous voulez un SA basique
-  # annotations supprimées car plus besoin d'IAM GCP
-  # name: optionnel
+  create: false
+  automount: true
+  annotations: {}
+  name: ""
 
 serviceMonitor:
   enabled: true
-  namespace: monitoring
-  interval: 30s
-  telemetryPath: /metrics
+  useServicePort: false
+  namespace: "monitoring"
+  interval: "30s"
+  telemetryPath: "/metrics"
   labels:
-    release: prometheus
-  timeout: 10s
+    release: "prometheus"
+  timeout: "10s"
   targetLabels: []
+  metricRelabelings: []
 
 resources:
   requests:
@@ -48,12 +82,42 @@ resources:
     cpu: "2"
     memory: "4Gi"
 
-# Configuration du service (NodePort n'est pas supporté selon le schéma)
 service:
   enabled: true
-  type: ClusterIP  # Seul ClusterIP est supporté selon le schéma
+  type: ClusterIP
   port: 5000
   containerPort: 5000
   name: http
   containerPortName: mlflow
   annotations: {}
+
+# Ajout des propriétés requises manquantes
+postgresql:
+  enabled: false  # Désactivé car on utilise un PostgreSQL externe
+  architecture: "standalone"
+  auth:
+    username: ""
+    password: ""
+    database: "mlflow"
+  primary:
+    service:
+      ports:
+        postgresql: 5432
+    persistence:
+      enabled: true
+      existingClaim: ""
+
+mysql:
+  enabled: false
+  architecture: "standalone"
+  auth:
+    username: ""
+    password: ""
+    database: "mlflow"
+  primary:
+    service:
+      ports:
+        mysql: 3306
+    persistence:
+      enabled: true
+      existingClaim: ""
