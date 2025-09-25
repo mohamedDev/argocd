@@ -19,7 +19,7 @@ config:
   conf:
     listen:
       host: 0.0.0.0
-      port: 9000
+      port: 30904
     etcd:
       endpoints:
         - apisix-app-etcd.apisix-dev.svc.cluster.local:2379
@@ -42,7 +42,7 @@ config:
 
 service:
   type: NodePort
-  port: 9000
+  port: 30904
   nodePort: 30904  # accès depuis le cluster ou ton localhost via NodePort
 
 ingress:
