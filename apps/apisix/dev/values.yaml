@@ -20,21 +20,7 @@ service:
 
 # Configuration d'ingress (optionnel)
 ingress:
-  enabled: true
-  annotations:
-    kubernetes.io/ingress.class: "gce"
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
-  hosts:
-    - host: api.votre-domaine.com
-      paths:
-        - path: /
-          backend:
-            serviceName: apisix-gateway
-            servicePort: 80
-  tls:
-    - secretName: apisix-tls
-      hosts:
-        - api.votre-domaine.com
+  enabled: false
 
 # Configuration des ressources
 resources:
