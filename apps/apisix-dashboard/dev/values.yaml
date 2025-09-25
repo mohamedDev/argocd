@@ -34,7 +34,7 @@ config:
         filePath: /dev/stdout
     plugins: []
   authentication:
-    secret: secret
+    secret: "supersecret123"
     expireTime: 3600
     users:
       - username: admin
