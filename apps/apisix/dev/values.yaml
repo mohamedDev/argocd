@@ -43,10 +43,10 @@ autoscaling:
 # etcd embarqué (éviter en prod GKE, privilégier un etcd externe ou Cloud Spanner/Cloud SQL)
 etcd:
   enabled: true
-  replicaCount: 1
+  replicaCount: 1  # Réduire à 1 pour local-path
   persistence:
     enabled: true
-    storageClass: "standard-rwo"
+    storageClass: "local-path"
     size: 8Gi
 
 # APISIX core config
