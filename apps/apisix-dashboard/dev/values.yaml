@@ -19,7 +19,7 @@ config:
   conf:
     listen:
       host: 0.0.0.0
-      port: 30904
+      port: 9000
     etcd:
       endpoints:
         - apisix-app-etcd.apisix-dev.svc.cluster.local:2379
@@ -43,7 +43,7 @@ service:
   # -- Service type
   type: ClusterIP
   # -- Service HTTP port
-  port: 30904
+  port: 9000
 
 ingress:
   enabled: false
