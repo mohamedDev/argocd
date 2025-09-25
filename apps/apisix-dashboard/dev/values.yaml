@@ -38,12 +38,13 @@ config:
     expireTime: 3600
     users:
       - username: admin
-        password: admin  # modifie si tu veux plus sécurisé
+        password: admin # modifie si tu veux plus sécurisé
 
 service:
-  type: NodePort
-  port: 30904
-  nodePort: 30904  # accès depuis le cluster ou ton localhost via NodePort
+  # -- Service type
+  type: ClusterIP
+  # -- Service HTTP port
+  port: 80
 
 ingress:
   enabled: false
