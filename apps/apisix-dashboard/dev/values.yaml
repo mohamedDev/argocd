@@ -19,7 +19,7 @@ config:
   conf:
     listen:
       host: 0.0.0.0
-      port: 30904
+      port: 9000
     etcd:
       endpoints:
         - apisix-app-etcd.apisix-dev.svc.cluster.local:2379
@@ -34,17 +34,15 @@ config:
         filePath: /dev/stdout
     plugins: []
   authentication:
-    secret: "supersecret123"
+    secret: secret
     expireTime: 3600
     users:
       - username: admin
-        password: admin # modifie si tu veux plus sécurisé
+        password: testaa  # modifie si tu veux plus sécurisé
 
 service:
-  # -- Service type
-  type: ClusterIP
-  # -- Service HTTP port
-  port: 80
+  type: clusterIP
+  port: 30904
 
 ingress:
   enabled: false
