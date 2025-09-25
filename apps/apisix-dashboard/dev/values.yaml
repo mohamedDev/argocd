@@ -1,0 +1,67 @@
+# Custom values for local Rancher/k3s deployment
+
+replicaCount: 1
+
+image:
+  repository: apache/apisix-dashboard
+  tag: 3.0.0-alpine
+  pullPolicy: IfNotPresent
+
+serviceAccount:
+  create: true
+
+# Pod security
+podSecurityContext: {}
+securityContext: {}
+
+# APISIX Dashboard configuration
+config:
+  conf:
+    listen:
+      host: 0.0.0.0
+      port: 9000
+    etcd:
+      endpoints:
+        - apisix-app-etcd:2379  # pointe vers ton etcd local APISIX
+      prefix: "/apisix"
+      username: ~
+      password: ~
+    log:
+      errorLog:
+        level: warn
+        filePath: /dev/stderr
+      accessLog:
+        filePath: /dev/stdout
+    plugins: []
+  authentication:
+    secret: secret
+    expireTime: 3600
+    users:
+      - username: admin
+        password: admin  # modifie si tu veux plus sécurisé
+
+service:
+  type: NodePort
+  port: 9000
+  nodePort: 30904  # accès depuis le cluster ou ton localhost via NodePort
+
+ingress:
+  enabled: false
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+autoscaling:
+  enabled: false
+
+nodeSelector:
+  kubernetes.io/os: linux
+
+tolerations: []
+affinity: {}
+topologySpreadConstraints: []

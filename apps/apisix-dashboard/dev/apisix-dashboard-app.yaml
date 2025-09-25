@@ -1,0 +1,23 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: apisix-dashboard-app
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/mohamedDev/argocd.git'
+    targetRevision: HEAD
+    path: charts/apisix-dashboard
+    helm:
+      valueFiles:
+        - ../../apps/apisix-dashboard/dev/values.yaml
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: apisix-dashboard-dev    # 👈 le namespace cible
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true     # 👈 ArgoCD créera le namespace si absent

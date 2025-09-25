@@ -1,0 +1,8 @@
+apiVersion: v2
+appVersion: 3.0.0
+deprecated: true
+description: DEPRECATED A Helm chart for Apache APISIX Dashboard
+icon: https://apache.org/logos/res/apisix/apisix.png
+name: apisix-dashboard
+type: application
+version: 0.8.3
