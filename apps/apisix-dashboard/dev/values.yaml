@@ -4,7 +4,7 @@ replicaCount: 1
 
 image:
   repository: apache/apisix-dashboard
-  tag: 3.0.1
+  tag: latest
   pullPolicy: IfNotPresent
 
 serviceAccount:
