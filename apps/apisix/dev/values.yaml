@@ -73,7 +73,7 @@ dashboard:
     pullPolicy: IfNotPresent
   
   service:
-    type: ClusterIP
+    type: NodePort
     port: 9000
     nodePort: 30902  # Port accessible sur vos nœuds
   
