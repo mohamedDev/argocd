@@ -1,12 +1,13 @@
 # Configuration APISIX pour GKE
+
 replicaCount: 2
 
 image:
   repository: apache/apisix
-  tag: "3.8.0-debian"
+  tag: "3.13.0-ubuntu"   # dernière version stable du chart officiel
   pullPolicy: IfNotPresent
 
-# Configuration du service
+# Service configuration
 service:
   type: NodePort
   http:
@@ -15,16 +16,15 @@ service:
     containerPort: 9080
     nodePort: 30088
   tls:
-    enabled: true
     servicePort: 443
     containerPort: 9443
     nodePort: 30443
 
-# Configuration d'ingress (optionnel)
+# Ingress (désactivé ici, GKE LoadBalancer sera plus adapté)
 ingress:
   enabled: false
 
-# Configuration des ressources
+# Resources (équilibrées pour GKE n1-standard-2)
 resources:
   limits:
     cpu: 500m
@@ -33,120 +33,98 @@ resources:
     cpu: 250m
     memory: 256Mi
 
-# Configuration d'autoscaling
+# Autoscaling horizontal (HPA)
 autoscaling:
   enabled: true
   minReplicas: 1
-  maxReplicas: 2
+  maxReplicas: 3
   targetCPUUtilizationPercentage: 70
 
-# Configuration spécifique Rancher/k3s
+# etcd embarqué (éviter en prod GKE, privilégier un etcd externe ou Cloud Spanner/Cloud SQL)
 etcd:
   enabled: true
-  replicaCount: 1  # Réduire à 1 pour local-path
+  replicaCount: 1
   persistence:
     enabled: true
-    storageClass: "local-path"
+    storageClass: "standard-rwo"
     size: 8Gi
 
-# Configuration APISIX
+# APISIX core config
 apisix:
-  # Configuration du nœud APISIX
-  node_listen: 9080
+  enableHTTP2: true
+  enableIPv6: false
+
   ssl:
     enabled: true
-    listen: 9443
-  
-  # Configuration d'authentification admin
-  admin_key:
-    - name: admin
-      key: admin
-      role: admin
+    containerPort: 9443
+    enableHTTP3: false
 
-# Configuration APISIX Dashboard
-dashboard:
-  enabled: true
-  replicaCount: 1
-  image:
-    repository: apache/apisix-dashboard
-    tag: "3.0.1-alpine"
-    pullPolicy: IfNotPresent
-  
-  service:
-    type: NodePort
-    port: 9000
-    nodePort: 30902  # Port accessible sur vos nœuds
-  
-  # Configuration de connexion à APISIX
-  config:
-    authentication:
-      secret: dashboard-secret
-      expire_time: 3600
-    users:
-      - username: admin
-        password: admin123  # Changez ce mot de passe !
-        role: admin
-    
-  resources:
-    limits:
-      cpu: 200m
-      memory: 256Mi
-    requests:
-      cpu: 100m
-      memory: 128Mi
+  admin:
+    enabled: true
+    type: ClusterIP
+    port: 9180
+    servicePort: 9180
+    cors: true
+    credentials:
+      admin: "changeme-admin-key"
+      viewer: "changeme-viewer-key"
+      secretName: ""   # tu peux mettre un secret GKE si tu veux externaliser les clés
+    allow:
+      ipList:
+        - 10.0.0.0/8     # CIDR interne GKE
+        - 127.0.0.1/24   # localhost
 
-# Configuration de monitoring (optionnel)
-serviceMonitor:
-  enabled: false
-  interval: 15s
+  plugins:
+    - api-breaker
+    - authz-keycloak
+    - basic-auth
+    - batch-requests
+    - consumer-restriction
+    - cors
+    - echo
+    - fault-injection
+    - grpc-transcode
+    - hmac-auth
+    - http-logger
+    - ip-restriction
+    - jwt-auth
+    - key-auth
+    - limit-conn
+    - limit-count
+    - limit-req
+    - node-status
+    - openid-connect
+    - prometheus
+    - proxy-cache
+    - proxy-mirror
+    - proxy-rewrite
+    - redirect
+    - referer-restriction
+    - request-id
+    - request-validation
+    - response-rewrite
+    - serverless-pre-function
+    - serverless-post-function
+    - sls-logger
+    - syslog
+    - tcp-logger
+    - udp-logger
+    - uri-blocker
+    - wolf-rbac
+    - zipkin
+    - server-info
+    - traffic-split
 
-# Configuration des plugins
-plugins:
-  - api-breaker
-  - authz-keycloak
-  - basic-auth
-  - batch-requests
-  - consumer-restriction
-  - cors
-  - echo
-  - fault-injection
-  - grpc-transcode
-  - hmac-auth
-  - http-logger
-  - ip-restriction
-  - jwt-auth
-  - key-auth
-  - limit-conn
-  - limit-count
-  - limit-req
-  - node-status
-  - openid-connect
-  - prometheus
-  - proxy-cache
-  - proxy-mirror
-  - proxy-rewrite
-  - redirect
-  - referer-restriction
-  - request-id
-  - request-validation
-  - response-rewrite
-  - serverless-pre-function
-  - serverless-post-function
-  - sls-logger
-  - syslog
-  - tcp-logger
-  - udp-logger
-  - uri-blocker
-  - wolf-rbac
-  - zipkin
-  - server-info
-  - traffic-split
+# Monitoring
+metrics:
+  serviceMonitor:
+    enabled: false
 
-# Configuration spécifique à GKE
+# Spécifique GKE
 nodeSelector:
   kubernetes.io/os: linux
 
 tolerations: []
 
-# Désactiver l'anti-affinité (problématique avec peu de nœuds)
+# Pas d’anti-affinité forcée (utile sur petit cluster GKE)
 affinity: {}
