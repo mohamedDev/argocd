@@ -39,10 +39,11 @@ config:
     users:
       - username: admin
         password: testaa  # modifie si tu veux plus sécurisé
-
 service:
-  type: clusterIP
-  port: 30904
+  # -- Service type
+  type: ClusterIP
+  # -- Service HTTP port
+  port: 80
 
 ingress:
   enabled: false
