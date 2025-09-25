@@ -1,0 +1,173 @@
+# Configuration APISIX pour GKE
+replicaCount: 2
+
+image:
+  repository: apache/apisix
+  tag: "3.8.0-debian"
+  pullPolicy: IfNotPresent
+
+# Configuration du service
+service:
+  type: LoadBalancer
+  http:
+    enabled: true
+    servicePort: 80
+    containerPort: 9080
+  tls:
+    enabled: true
+    servicePort: 443
+    containerPort: 9443
+
+# Configuration d'ingress (optionnel)
+ingress:
+  enabled: true
+  annotations:
+    kubernetes.io/ingress.class: "gce"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  hosts:
+    - host: api.votre-domaine.com
+      paths:
+        - path: /
+          backend:
+            serviceName: apisix-gateway
+            servicePort: 80
+  tls:
+    - secretName: apisix-tls
+      hosts:
+        - api.votre-domaine.com
+
+# Configuration des ressources
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+# Configuration d'autoscaling
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+
+# Configuration etcd
+etcd:
+  enabled: true
+  replicaCount: 3
+  persistence:
+    enabled: true
+    storageClass: "standard-rwo"  # Classe de stockage GKE
+    size: 8Gi
+
+# Configuration APISIX
+apisix:
+  # Configuration du nœud APISIX
+  node_listen: 9080
+  ssl:
+    enabled: true
+    listen: 9443
+  
+  # Configuration d'authentification admin
+  admin_key:
+    - name: admin
+      key: admin
+      role: admin
+
+# Configuration APISIX Dashboard
+dashboard:
+  enabled: true
+  replicaCount: 1
+  image:
+    repository: apache/apisix-dashboard
+    tag: "3.0.1-alpine"
+    pullPolicy: IfNotPresent
+  
+  service:
+    type: ClusterIP
+    port: 9000
+  
+  # Configuration de connexion à APISIX
+  config:
+    authentication:
+      secret: dashboard-secret
+      expire_time: 3600
+    users:
+      - username: admin
+        password: admin123  # Changez ce mot de passe !
+        role: admin
+    
+  resources:
+    limits:
+      cpu: 200m
+      memory: 256Mi
+    requests:
+      cpu: 100m
+      memory: 128Mi
+
+# Configuration de monitoring (optionnel)
+serviceMonitor:
+  enabled: false
+  interval: 15s
+
+# Configuration des plugins
+plugins:
+  - api-breaker
+  - authz-keycloak
+  - basic-auth
+  - batch-requests
+  - consumer-restriction
+  - cors
+  - echo
+  - fault-injection
+  - grpc-transcode
+  - hmac-auth
+  - http-logger
+  - ip-restriction
+  - jwt-auth
+  - key-auth
+  - limit-conn
+  - limit-count
+  - limit-req
+  - node-status
+  - openid-connect
+  - prometheus
+  - proxy-cache
+  - proxy-mirror
+  - proxy-rewrite
+  - redirect
+  - referer-restriction
+  - request-id
+  - request-validation
+  - response-rewrite
+  - serverless-pre-function
+  - serverless-post-function
+  - sls-logger
+  - syslog
+  - tcp-logger
+  - udp-logger
+  - uri-blocker
+  - wolf-rbac
+  - zipkin
+  - server-info
+  - traffic-split
+
+# Configuration spécifique à GKE
+nodeSelector:
+  kubernetes.io/os: linux
+
+tolerations: []
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      podAffinityTerm:
+        labelSelector:
+          matchExpressions:
+          - key: app.kubernetes.io/name
+            operator: In
+            values:
+            - apisix
+        topologyKey: kubernetes.io/hostname
