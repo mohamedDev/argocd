@@ -22,7 +22,7 @@ config:
       port: 9000
     etcd:
       endpoints:
-        - apisix-app-etcd:2379  # pointe vers ton etcd local APISIX
+        - apisix-app-etcd.apisix-dev.svc.cluster.local:2379
       prefix: "/apisix"
       username: ~
       password: ~
