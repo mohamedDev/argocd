@@ -8,15 +8,17 @@ image:
 
 # Configuration du service
 service:
-  type: LoadBalancer
+  type: NodePort
   http:
     enabled: true
     servicePort: 80
     containerPort: 9080
+    nodePort: 30088
   tls:
     enabled: true
     servicePort: 443
     containerPort: 9443
+    nodePort: 30443
 
 # Configuration d'ingress (optionnel)
 ingress:
@@ -34,17 +36,17 @@ resources:
 # Configuration d'autoscaling
 autoscaling:
   enabled: true
-  minReplicas: 2
-  maxReplicas: 10
+  minReplicas: 1
+  maxReplicas: 2
   targetCPUUtilizationPercentage: 70
 
-# Configuration etcd
+# Configuration spécifique Rancher/k3s
 etcd:
   enabled: true
-  replicaCount: 3
+  replicaCount: 1  # Réduire à 1 pour local-path
   persistence:
     enabled: true
-    storageClass: "standard-rwo"  # Classe de stockage GKE
+    storageClass: "local-path"
     size: 8Gi
 
 # Configuration APISIX
@@ -145,15 +147,5 @@ nodeSelector:
 
 tolerations: []
 
-affinity:
-  podAntiAffinity:
-    preferredDuringSchedulingIgnoredDuringExecution:
-    - weight: 100
-      podAffinityTerm:
-        labelSelector:
-          matchExpressions:
-          - key: app.kubernetes.io/name
-            operator: In
-            values:
-            - apisix
-        topologyKey: kubernetes.io/hostname
+# Désactiver l'anti-affinité (problématique avec peu de nœuds)
+affinity: {}
