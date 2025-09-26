@@ -1,13 +1,21 @@
-# Configuration fonctionnelle pour APISIX Ingress Controller - Rancher Desktop
+# Configuration pour APISIX Ingress Controller v2.0.0-rc4
 
-# Configuration de base du déploiement
+nameOverride: ""
+fullnameOverride: ""
+
+podDisruptionBudget:
+  enabled: false
+
+autoscaling:
+  enabled: false
+
 deployment:
   replicas: 1
   
   image:
     repository: apache/apisix-ingress-controller
     pullPolicy: IfNotPresent
-    tag: "1.8.0"
+    tag: "2.0.0-rc4"  # Version RC
   
   resources:
     limits:
@@ -17,47 +25,59 @@ deployment:
       cpu: 100m
       memory: 128Mi
 
-# Configuration du controller via variables d'environnement
-config:
-  # Niveau de log pour debug
-  logLevel: "debug"
-  
-  # Configuration Kubernetes
-  kubernetes:
-    ingressClass: "apisix"
-    defaultIngressClass: true
-    watchNamespaces: []  # Tous les namespaces
-  
-  # Configuration APISIX - utilise les valeurs par défaut du chart
-  apisix:
-    # Le chart va automatiquement découvrir le service APISIX
-    adminAPIKey: "edd1c9f034335f136f87ad84b625c8f1"
+  adcContainer:
+    image:
+      repository: ghcr.io/api7/adc
+      tag: "0.21.0"
+    config:
+      logLevel: "debug"
 
-# Configuration du service APISIX admin
+config:
+  logLevel: "debug"
+  controllerName: apisix.apache.org/apisix-ingress-controller
+  
+  leaderElection:
+    id: "apisix-ingress-controller-leader"
+    leaseDuration: "15s"
+    renewDeadline: "10s"
+    retryPeriod: "2s"
+    disable: false
+    
+  metricsAddr: ":8080"
+  enableHTTP2: false
+  probeAddr: ":8081"
+  secureMetrics: false
+  execADCTimeout: "15s"
+  
+  provider:
+    type: "apisix"
+    syncPeriod: "30s"
+    initSyncDelay: "10s"
+    
+  kubernetes:
+    ingressClass: apisix
+    defaultIngressClass: true
+
+# Configuration Gateway Proxy pour v2.0.0-rc4
+gatewayProxy:
+  createDefault: true  # ← Activé pour créer la config par défaut
+  provider:
+    type: ControlPlane
+    controlPlane:
+      # CORRECTION : Endpoints explicites
+      endpoints: 
+        - "http://apisix-app.apisix-dev.svc.cluster.local:9180"
+      auth:
+        type: AdminKey
+        adminKey:
+          value: "edd1c9f034335f136f87ad84b625c8f1"
+
+# CORRECTION : Bon namespace
 apisix:
   adminService:
-    namespace: "apisix-dev"
-    name: "apisix-app-admin"
+    namespace: apisix-dev  # ← CORRIGÉ
+    name: apisix-app
     port: 9180
-
-# Pas de gateway proxy pour éviter les complications
-gatewayProxy:
-  createDefault: false
-
-# Service Account et RBAC
-serviceAccount:
-  create: true
-  name: ""
-
-rbac:
-  create: true
-
-# Désactiver les fonctionnalités optionnelles
-autoscaling:
-  enabled: false
-
-podDisruptionBudget:
-  enabled: false
 
 serviceMonitor:
   enabled: false
