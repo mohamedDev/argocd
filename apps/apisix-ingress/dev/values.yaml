@@ -37,7 +37,7 @@ config:
 apisix:
   adminService:
     namespace: "apisix-dev"
-    name: "apisix-admin"
+    name: "apisix-app-admin"
     port: 9180
 
 # Pas de gateway proxy pour éviter les complications
