@@ -1,58 +1,14 @@
-# Custom values.yaml for APISIX Ingress Controller - Local Rancher Desktop deployment
+# Configuration fonctionnelle pour APISIX Ingress Controller - Rancher Desktop
 
-nameOverride: ""
-fullnameOverride: ""
-
-# Labels override for local environment
-labelsOverride: 
-  environment: "local"
-  managed-by: "rancher-desktop"
-
-# Disable PDB for local development
-podDisruptionBudget:
-  enabled: false
-  minAvailable: 90%
-  maxUnavailable: 1
-
-# Disable autoscaling for local environment
-autoscaling:
-  enabled: false
-  minReplicas: 1
-
+# Configuration de base du déploiement
 deployment:
-  # Annotations for local development
-  annotations:
-    description: "APISIX Ingress Controller for local development"
-  podAnnotations:
-    sidecar.istio.io/inject: "false"  # Disable Istio if present
-  
-  # Single replica for local development
   replicas: 1
-  
-  # Node selector for local development (optional)
-  nodeSelector: {}
-  
-  # No tolerations needed for local
-  tolerations: []
-  
-  # No specific affinity for single node
-  affinity: {}
-  
-  # Relaxed security context for local development
-  podSecurityContext:
-    runAsNonRoot: true
-    runAsUser: 1001
-    fsGroup: 1001
-  
-  topologySpreadConstraints: []
   
   image:
     repository: apache/apisix-ingress-controller
     pullPolicy: IfNotPresent
-    # Using stable version for local development
     tag: "1.8.0"
   
-  # Resource limits appropriate for local development
   resources:
     limits:
       cpu: 500m
@@ -61,119 +17,47 @@ deployment:
       cpu: 100m
       memory: 128Mi
 
-  # ADC sidecar container configuration
-  adcContainer:
-    image:
-      repository: ghcr.io/api7/adc
-      tag: "0.21.0"
-    config:
-      logLevel: "debug"  # More verbose logging for local development
-
+# Configuration du controller via variables d'environnement
 config:
-  # Debug level for local development
+  # Niveau de log pour debug
   logLevel: "debug"
-  controllerName: apisix.apache.org/apisix-ingress-controller
   
-  # Leader election settings (can be disabled for single replica)
-  leaderElection:
-    id: "apisix-ingress-controller-leader"
-    leaseDuration: "15s"
-    renewDeadline: "10s"
-    retryPeriod: "2s"
-    disable: false  # Keep enabled even for single replica for consistency
-  
-  # Metrics configuration
-  metricsAddr: ":8080"
-  enableHTTP2: false
-  probeAddr: ":8081"
-  secureMetrics: false
-  execADCTimeout: "15s"
-  
-  # Provider configuration for local APISIX
-  provider:
-    type: "apisix"
-    syncPeriod: "30s"  # Faster sync for local development
-    initSyncDelay: "10s"  # Shorter delay for local development
-  
-  # Kubernetes ingress configuration
+  # Configuration Kubernetes
   kubernetes:
-    ingressClass: apisix
-    defaultIngressClass: true  # Make it default for convenience
-    # Watch all namespaces in local environment
-    watchNamespaces: []
-    # Enable ingress status updates
-    ingressStatusAddress: []
+    ingressClass: "apisix"
+    defaultIngressClass: true
+    watchNamespaces: []  # Tous les namespaces
+  
+  # Configuration APISIX - utilise les valeurs par défaut du chart
+  apisix:
+    # Le chart va automatiquement découvrir le service APISIX
+    adminAPIKey: "edd1c9f034335f136f87ad84b625c8f1"
 
-# Gateway proxy configuration for local APISIX instance
-gatewayProxy:
-  createDefault: false
-  provider:
-    type: ControlPlane
-    controlPlane:
-      # Local APISIX admin endpoints - adjust based on your APISIX deployment
-      endpoints: 
-        - "http://apisix-admin.apisix.svc.cluster.local:9180"
-      auth:
-        type: AdminKey
-        adminKey:
-          # Default admin key - change this in production!
-          value: "edd1c9f034335f136f87ad84b625c8f1"
-
-# APISIX admin service configuration
+# Configuration du service APISIX admin
 apisix:
   adminService:
-    # Namespace where APISIX is deployed
-    namespace: apisix-dev
-    name: apisix-admin
+    namespace: "apisix-dev"
+    name: "apisix-admin"
     port: 9180
 
-# Service monitor disabled for local development
-serviceMonitor:
-  enabled: false
-  namespace: "monitoring"
-  interval: 15s
-  labels: {}
-  annotations: {}
-  metricRelabelings: {}
+# Pas de gateway proxy pour éviter les complications
+gatewayProxy:
+  createDefault: false
 
-# Additional configurations for local development
-service:
-  # Expose metrics service as NodePort for easy access
-  type: ClusterIP
-  port: 8080
-  targetPort: 8080
-
-# RBAC configuration
-rbac:
-  # Create RBAC resources
-  create: true
-
-# ServiceAccount configuration
+# Service Account et RBAC
 serviceAccount:
-  # Create service account
   create: true
-  # Annotations for the service account
-  annotations: {}
-  # Name of the service account (auto-generated if not set)
   name: ""
 
-# Priority class for local development
-priorityClassName: ""
+rbac:
+  create: true
 
-# Additional environment variables for debugging
-env:
-  - name: POD_NAMESPACE
-    valueFrom:
-      fieldRef:
-        fieldPath: metadata.namespace
-  - name: POD_NAME
-    valueFrom:
-      fieldRef:
-        fieldPath: metadata.name
+# Désactiver les fonctionnalités optionnelles
+autoscaling:
+  enabled: false
 
-# Volume mounts for local development (if needed)
-extraVolumes: []
-extraVolumeMounts: []
+podDisruptionBudget:
+  enabled: false
 
-# Init containers (if needed)
-initContainers: []
+serviceMonitor:
+  enabled: false
