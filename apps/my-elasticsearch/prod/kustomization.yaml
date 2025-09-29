@@ -6,4 +6,5 @@ resources:
   - service-exporter.yaml
   - service-elasticsearch.yaml
   - service-kibana.yaml
+  - ingress-kibana.yaml
 

@@ -1,20 +1,10 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: apisix-ingress-test
+  name: kibana-ingress
 spec:
   ingressClassName: apisix
   rules:
-  - host: nginx.local
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: nginx-service
-            port:
-              number: 80
   - host: kibana.local
     http:
       paths:

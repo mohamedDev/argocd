@@ -34,7 +34,7 @@ spec:
     # targetPort: 80
     # nodePort: 30007  # Optional: specify a fixed nodePort (range: 30000-32767)
   #type: NodePort
----
+
 # apiVersion: networking.k8s.io/v1
 # kind: Ingress
 # metadata:
@@ -52,3 +52,21 @@ spec:
 #                 name: nginx-service
 #                 port:
 #                   number: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ingress-nginx
+spec:
+  ingressClassName: apisix
+  rules:
+  - host: nginx.local
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: nginx-service
+            port:
+              number: 80
