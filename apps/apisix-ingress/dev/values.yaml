@@ -65,19 +65,19 @@ gatewayProxy:
     type: ControlPlane
     controlPlane:
       # CORRECTION : Endpoints explicites
-      endpoints: 
-        - "http://apisix-app-admin.apisix-dev.svc.cluster.local:9180"
+      endpoints: []
+#        - "http://apisix-app-admin.apisix-dev.svc.cluster.local:9180"
       auth:
         type: AdminKey
         adminKey:
           value: "edd1c9f034335f136f87ad84b625c8f1"
 
 # CORRECTION : Bon namespace
-# apisix:
-#   adminService:
-#     namespace: apisix-dev  # ← CORRIGÉ
-#     name: apisix-app-admin
-#     port: 9180
+apisix:
+  adminService:
+    namespace: apisix-dev  # ← CORRIGÉ
+    name: apisix-app-admin
+    port: 9180
 
 serviceMonitor:
   enabled: false
