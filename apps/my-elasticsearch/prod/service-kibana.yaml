@@ -9,4 +9,4 @@ spec:
     - protocol: TCP
       port: 5601
       targetPort: 5601
-  type: LoadBalancer # ou NodePort si tu n’as pas de LoadBalancer
+  type: ClusterIP # ou NodePort si tu n’as pas de LoadBalancer

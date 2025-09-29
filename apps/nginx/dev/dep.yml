@@ -35,20 +35,20 @@ spec:
     # nodePort: 30007  # Optional: specify a fixed nodePort (range: 30000-32767)
   #type: NodePort
 ---
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: demo-ingress
-spec:
-  ingressClassName: traefik # <- tu forces Traefik
-  rules:
-    - host: nginx.local
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: nginx-service
-                port:
-                  number: 80
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: demo-ingress
+# spec:
+#   ingressClassName: traefik # <- tu forces Traefik
+#   rules:
+#     - host: nginx.local
+#       http:
+#         paths:
+#           - path: /
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: nginx-service
+#                 port:
+#                   number: 80
