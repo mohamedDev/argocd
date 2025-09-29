@@ -73,11 +73,11 @@ gatewayProxy:
           value: "changeme-admin-key"
 
 # CORRECTION : Bon namespace
-# apisix:
-#   adminService:
-#     namespace: apisix-dev # ← CORRIGÉ
-#     name: apisix-app-admin
-#     port: 9180
+apisix:
+  adminService:
+    namespace: apisix-dev # ← CORRIGÉ
+    name: apisix-app-admin
+    port: 9180
 
 serviceMonitor:
   enabled: false
