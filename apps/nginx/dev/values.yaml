@@ -1,11 +1,11 @@
-replicaCount: 1
+# replicaCount: 1
 
-image:
-  repository: nginx
-  tag: "latest"
-  pullPolicy: IfNotPresent
+# image:
+#   repository: nginx
+#   tag: "latest"
+#   pullPolicy: IfNotPresent
 
-service:
-  type: NodePort
-  port: 80
-  nodePort: 30081
+# service:
+#   type: NodePort
+#   port: 80
+#   nodePort: 30081
