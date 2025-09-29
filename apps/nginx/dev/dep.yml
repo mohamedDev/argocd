@@ -39,7 +39,7 @@ metadata:
   name: demo-ingress
 spec:
   rules:
-  - host: mystack.local
+  - host:  nginx.local
     http:
       paths:
       - path: /
