@@ -11,12 +11,12 @@ autoscaling:
 
 deployment:
   replicas: 1
-  
+
   image:
     repository: apache/apisix-ingress-controller
     pullPolicy: IfNotPresent
-    tag: "2.0.0-rc4"  # Version RC
-  
+    tag: "2.0.0-rc4" # Version RC
+
   resources:
     limits:
       cpu: 500m
@@ -35,49 +35,49 @@ deployment:
 config:
   logLevel: "debug"
   controllerName: apisix.apache.org/apisix-ingress-controller
-  
+
   leaderElection:
     id: "apisix-ingress-controller-leader"
     leaseDuration: "15s"
     renewDeadline: "10s"
     retryPeriod: "2s"
     disable: false
-    
+
   metricsAddr: ":8080"
   enableHTTP2: false
   probeAddr: ":8081"
   secureMetrics: false
   execADCTimeout: "15s"
-  
+
   provider:
     type: "apisix"
     syncPeriod: "30s"
     initSyncDelay: "10s"
-    
+
   kubernetes:
     ingressClass: apisix
     defaultIngressClass: true
 
 # Configuration Gateway Proxy pour v2.0.0-rc4
 gatewayProxy:
-  createDefault: true  # ← Activé pour créer la config par défaut
+  createDefault: true # ← Activé pour créer la config par défaut
   provider:
     type: ControlPlane
     controlPlane:
       # CORRECTION : Endpoints explicites
-      endpoints: []
-#        - "http://apisix-app-admin.apisix-dev.svc.cluster.local:9180"
+      endpoints:
+        - "http://apisix-app-admin.apisix-dev.svc.cluster.local:9180"
       auth:
         type: AdminKey
         adminKey:
-          value: "edd1c9f034335f136f87ad84b625c8f1"
+          value: "changeme-admin-key"
 
 # CORRECTION : Bon namespace
-apisix:
-  adminService:
-    namespace: apisix-dev  # ← CORRIGÉ
-    name: apisix-app-admin
-    port: 9180
+# apisix:
+#   adminService:
+#     namespace: apisix-dev # ← CORRIGÉ
+#     name: apisix-app-admin
+#     port: 9180
 
 serviceMonitor:
   enabled: false
