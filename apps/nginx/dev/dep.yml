@@ -13,10 +13,10 @@ spec:
         app: nginx
     spec:
       containers:
-      - name: nginx
-        image: nginx:latest
-        ports:
-        - containerPort: 80
+        - name: nginx
+          image: nginx:latest
+          ports:
+            - containerPort: 80
 ---
 apiVersion: v1
 kind: Service
@@ -28,9 +28,11 @@ spec:
   ports:
     - protocol: TCP
       port: 80
-  type: ClusterIP
-      # targetPort: 80
-      # nodePort: 30007  # Optional: specify a fixed nodePort (range: 30000-32767)
+      targetPort: 80
+  type:
+    ClusterIP
+    # targetPort: 80
+    # nodePort: 30007  # Optional: specify a fixed nodePort (range: 30000-32767)
   #type: NodePort
 ---
 apiVersion: networking.k8s.io/v1
@@ -38,14 +40,15 @@ kind: Ingress
 metadata:
   name: demo-ingress
 spec:
+  ingressClassName: traefik # <- tu forces Traefik
   rules:
-  - host:  nginx.local
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: nginx-service
-            port:
-              number: 80
+    - host: nginx.local
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: nginx-service
+                port:
+                  number: 80
