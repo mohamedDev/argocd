@@ -77,8 +77,10 @@ spec:
         serviceName: nginx-service
         servicePort: 80
       plugins:
-        - name: limit-req
+        - name: limit-count
           enable: true
           config:
-            rate: 1
-            burst: 0
+            rejected_code: 503
+            count: 2
+            time_window: 3
+            key: remote_addr
