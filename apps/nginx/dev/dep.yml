@@ -81,6 +81,6 @@ spec:
           enable: true
           config:
             rejected_code: 503
-            count: 2
-            time_window: 3
+            count: 1
+            time_window: 1
             key: remote_addr
