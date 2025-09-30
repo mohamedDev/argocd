@@ -14,7 +14,7 @@ spec:
         - ../../apps/apisix-ingress/dev/values.yaml
   destination:
     server: 'https://kubernetes.default.svc'
-    namespace: apisix-ingress-dev    # 👈 le namespace cible
+    namespace: apisix-dev    # 👈 le namespace cible
   syncPolicy:
     automated:
       prune: true

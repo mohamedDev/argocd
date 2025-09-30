@@ -65,8 +65,7 @@ gatewayProxy:
     type: ControlPlane
     controlPlane:
       # CORRECTION : Endpoints explicites
-      endpoints:
-        - "http://apisix-app-admin.apisix-dev.svc.cluster.local:9180"
+      endpoints: []
       auth:
         type: AdminKey
         adminKey:
