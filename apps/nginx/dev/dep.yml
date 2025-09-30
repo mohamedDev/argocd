@@ -59,14 +59,26 @@ metadata:
   name: ingress-nginx
 spec:
   ingressClassName: apisix
-  rules:
-  - host: nginx.local
-    http:
-      paths:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: nginx-service
-            port:
-              number: 80
+
+---
+apiVersion: apisix.apache.org/v2
+kind: ApisixRoute
+metadata:
+  name: demo-route
+spec:
+  http:
+    - name: demo-http
+      match:
+        hosts:
+          - nginx.local
+        paths:
+          - /
+      backend:
+        serviceName: nginx-service
+        servicePort: 80
+      plugins:
+        - name: limit-req
+          enable: true
+          config:
+            rate: 1
+            burst: 0
