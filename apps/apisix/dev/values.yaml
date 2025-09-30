@@ -9,16 +9,15 @@ image:
 
 # Service configuration
 service:
-  type: NodePort
+  type: LoadBalancer
   http:
     enabled: true
     servicePort: 80
     containerPort: 9080
-    nodePort: 30088
   tls:
     servicePort: 443
     containerPort: 9443
-    nodePort: 30443
+
 
 # Ingress (désactivé ici, GKE LoadBalancer sera plus adapté)
 ingress:
