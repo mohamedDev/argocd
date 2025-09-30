@@ -89,4 +89,6 @@ spec:
         servicePort: 80
       plugins:
         - name: redirect
-          uri: https://www.google.com
+          enable: true
+          config:
+            uri: https://www.google.com
