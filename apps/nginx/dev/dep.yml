@@ -91,4 +91,6 @@ spec:
         - name: redirect
           enable: true
           config:
-            uri: https://www.google.com
+            uri: "https://www.google.com"
+            redirect_code: 302
+
