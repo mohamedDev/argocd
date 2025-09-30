@@ -88,15 +88,5 @@ spec:
         serviceName: nginx-service
         servicePort: 80
       plugins:
-        - name: response-rewrite
-          enable: true
-          config:
-            status_code: 200
-            body: '{"code": "ok", "message": "new json body"}'
-            headers:
-              set:
-                X-Server-id: 3
-                X-Server-status: "on"
-                X-Server-balancer-addr: "$balancer_ip:$balancer_port"
-            vars:
-              - ["status", "==", 200]
+        - name: redirect
+          uri: https://www.google.com
