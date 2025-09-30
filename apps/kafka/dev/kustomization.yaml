@@ -1,4 +1,5 @@
 resources:
+  - kafka-config.yaml
   - zookeeper-deployment.yaml
   - kafka-statefulset.yaml
   - kafka-ui.yaml
