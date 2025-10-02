@@ -72,10 +72,55 @@ spec:
 #                   number: 80
 
 ---
+# apiVersion: apisix.apache.org/v2
+# kind: ApisixRoute
+# metadata:
+#   name: demo-route
+# spec:
+#   http:
+#     - name: demo-http
+#       match:
+#         hosts:
+#           - nginx.local
+#         paths:
+#           - /
+#       backend:
+#         serviceName: nginx-service
+#         servicePort: 80
+#       plugins:
+#         - name: redirect
+#           enable: true
+#           config:
+#             uri: "https://www.google.com"
+#             redirect_code: 302
+
+# Configuration alternative pour tous les logs globalement
+# Utiliser ApisixPluginConfig pour réutiliser la config
+apiVersion: apisix.apache.org/v2
+kind: ApisixPluginConfig
+metadata:
+  name: kafka-logging-global
+  namespace: default
+spec:
+  plugins:
+    - name: kafka-logger
+      enable: true
+      config:
+        broker_list:
+          - "kafka.kafka-dev.svc.cluster.local:9092"
+        kafka_topic: "apisix-logs"
+        timeout: 3000
+        max_retry_count: 3
+        batch_max_size: 50
+        inactive_timeout: 5
+        include_req_body: true
+        include_resp_body: false
+---
+# Route utilisant la configuration réutilisable
 apiVersion: apisix.apache.org/v2
 kind: ApisixRoute
 metadata:
-  name: demo-route
+  name: route-using-plugin-config
 spec:
   http:
     - name: demo-http
@@ -87,10 +132,4 @@ spec:
       backend:
         serviceName: nginx-service
         servicePort: 80
-      plugins:
-        - name: redirect
-          enable: true
-          config:
-            uri: "https://www.google.com"
-            redirect_code: 302
-
+      plugin_config_name: kafka-logging-config

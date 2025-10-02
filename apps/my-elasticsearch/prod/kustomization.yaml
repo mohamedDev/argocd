@@ -7,4 +7,5 @@ resources:
   - service-elasticsearch.yaml
   - service-kibana.yaml
   - ingress-kibana.yaml
+  - apisix-route.yaml
 
