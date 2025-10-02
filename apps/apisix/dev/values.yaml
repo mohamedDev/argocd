@@ -114,6 +114,7 @@ apisix:
     - zipkin
     - server-info
     - traffic-split
+    - kafka-logger
 
 # Monitoring
 metrics:
