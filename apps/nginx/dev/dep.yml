@@ -100,7 +100,6 @@ apiVersion: apisix.apache.org/v2
 kind: ApisixPluginConfig
 metadata:
   name: kafka-logging-global
-  namespace: default
 spec:
   plugins:
     - name: kafka-logger
