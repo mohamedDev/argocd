@@ -111,15 +111,15 @@ spec:
         serviceName: nginx-service
         servicePort: 80
       plugins:
-    - name: kafka-logger
-      enable: true
-      config:
-        broker_list:
-          - "kafka.kafka-dev.svc.cluster.local:9092"
-        kafka_topic: "apisix-logs"
-        timeout: 3000
-        max_retry_count: 3
-        batch_max_size: 50
-        inactive_timeout: 5
-        include_req_body: true
-        include_resp_body: false
+        - name: kafka-logger
+          enable: true
+          config:
+            broker_list:
+              - "kafka.kafka-dev.svc.cluster.local:9092"
+            kafka_topic: "apisix-logs"
+            timeout: 3000
+            max_retry_count: 3
+            batch_max_size: 50
+            inactive_timeout: 5
+            include_req_body: true
+            include_resp_body: false
