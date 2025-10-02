@@ -31,16 +31,13 @@ spec:
       targetPort: 80
   type:
     ClusterIP
-    # targetPort: 80
-    # nodePort: 30007  # Optional: specify a fixed nodePort (range: 30000-32767)
-  #type: NodePort
-
+---
 # apiVersion: networking.k8s.io/v1
 # kind: Ingress
 # metadata:
 #   name: demo-ingress
 # spec:
-#   ingressClassName: traefik # <- tu forces Traefik
+#   ingressClassName: traefik 
 #   rules:
 #     - host: nginx.local
 #       http:
@@ -53,52 +50,29 @@ spec:
 #                 port:
 #                   number: 80
 ---
-# apiVersion: networking.k8s.io/v1
-# kind: Ingress
-# metadata:
-#   name: ingress-nginx
-# spec:
-#   ingressClassName: apisix
-#   rules:
-#     - host: nginx.local
-#       http:
-#         paths:
-#           - path: /
-#             pathType: Prefix
-#             backend:
-#               service:
-#                 name: nginx-service
-#                 port:
-#                   number: 80
-
----
-apiVersion: apisix.apache.org/v2
-kind: ApisixRoute
+apiVersion: networking.k8s.io/v1
+kind: Ingress
 metadata:
-  name: demo-route
+  name: ingress-nginx
 spec:
-  http:
-    - name: demo-http
-      match:
-        hosts:
-          - nginx.local
+  ingressClassName: apisix
+  rules:
+    - host: nginx.local
+      http:
         paths:
-          - /
-      backend:
-        serviceName: nginx-service
-        servicePort: 80
-#       plugins:
-#         - name: redirect
-#           enable: true
-#           config:
-#             uri: "https://www.google.com"
-#             redirect_code: 302
----
-# Route utilisant la configuration réutilisable
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: nginx-service
+                port:
+                  number: 80
+
+# ---
 # apiVersion: apisix.apache.org/v2
 # kind: ApisixRoute
 # metadata:
-#   name: route-using-plugin-config
+#   name: demo-route
 # spec:
 #   http:
 #     - name: demo-http
@@ -110,16 +84,39 @@ spec:
 #       backend:
 #         serviceName: nginx-service
 #         servicePort: 80
-#       plugins:
-#         - name: kafka-logger
-#           enable: true
-#           config:
-#             broker_list:
-#               - "kafka.kafka-dev.svc.cluster.local:9092"
-#             kafka_topic: "apisix-logs"
-#             timeout: 3000
-#             max_retry_count: 3
-#             batch_max_size: 50
-#             inactive_timeout: 5
-#             include_req_body: true
-#             include_resp_body: false
+# #       plugins:
+# #         - name: redirect
+# #           enable: true
+# #           config:
+# #             uri: "https://www.google.com"
+# #             redirect_code: 302
+# ---
+# # Route utilisant la configuration réutilisable
+# # apiVersion: apisix.apache.org/v2
+# # kind: ApisixRoute
+# # metadata:
+# #   name: route-using-plugin-config
+# # spec:
+# #   http:
+# #     - name: demo-http
+# #       match:
+# #         hosts:
+# #           - nginx.local
+# #         paths:
+# #           - /
+# #       backend:
+# #         serviceName: nginx-service
+# #         servicePort: 80
+# #       plugins:
+# #         - name: kafka-logger
+# #           enable: true
+# #           config:
+# #             broker_list:
+# #               - "kafka.kafka-dev.svc.cluster.local:9092"
+# #             kafka_topic: "apisix-logs"
+# #             timeout: 3000
+# #             max_retry_count: 3
+# #             batch_max_size: 50
+# #             inactive_timeout: 5
+# #             include_req_body: true
+# #             include_resp_body: false
