@@ -54,9 +54,10 @@ spec:
           enable: true
           config:
             broker_list:
-              - host: "kafka.kafka-dev.svc.cluster.local"
+              default:
+                host: "kafka.kafka-dev.svc.cluster.local"
                 port: 9092
-                # sasl_config: # only if SASL is enabled
+                # sasl_config:  # décommente si SASL
                 #   mechanism: "PLAIN"
                 #   user: "username"
                 #   password: "password"
