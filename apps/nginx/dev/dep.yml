@@ -35,11 +35,10 @@ spec:
 apiVersion: apisix.apache.org/v2
 kind: ApisixRoute
 metadata:
-  name: demo-route
-  namespace: nginx-dev
+  name: kafka-route
 spec:
   http:
-    - name: demo-http
+    - name: kafka-logger-route
       match:
         hosts:
           - nginx.local
@@ -58,91 +57,3 @@ spec:
                 port: 9092
             kafka_topic: apisix-logs
             key: request-log
-# apiVersion: networking.k8s.io/v1
-# kind: Ingress
-# metadata:
-#   name: demo-ingress
-# spec:
-#   ingressClassName: traefik
-#   rules:
-#     - host: nginx.local
-#       http:
-#         paths:
-#           - path: /
-#             pathType: Prefix
-#             backend:
-#               service:
-#                 name: nginx-service
-#                 port:
-#                   number: 80
-# ---
-# apiVersion: networking.k8s.io/v1
-# kind: Ingress
-# metadata:
-#   name: ingress-nginx
-# spec:
-#   ingressClassName: apisix
-#   rules:
-#     - host: nginx.local
-#       http:
-#         paths:
-#           - path: /
-#             pathType: Prefix
-#             backend:
-#               service:
-#                 name: nginx-service
-#                 port:
-#                   number: 80
-
-# ---
-# apiVersion: apisix.apache.org/v2
-# kind: ApisixRoute
-# metadata:
-#   name: demo-route
-# spec:
-#   http:
-#     - name: demo-http
-#       match:
-#         hosts:
-#           - nginx.local
-#         paths:
-#           - /
-#       backend:
-#         serviceName: nginx-service
-#         servicePort: 80
-# #       plugins:
-# #         - name: redirect
-# #           enable: true
-# #           config:
-# #             uri: "https://www.google.com"
-# #             redirect_code: 302
-# ---
-# # Route utilisant la configuration réutilisable
-# # apiVersion: apisix.apache.org/v2
-# # kind: ApisixRoute
-# # metadata:
-# #   name: route-using-plugin-config
-# # spec:
-# #   http:
-# #     - name: demo-http
-# #       match:
-# #         hosts:
-# #           - nginx.local
-# #         paths:
-# #           - /
-# #       backend:
-# #         serviceName: nginx-service
-# #         servicePort: 80
-# #       plugins:
-# #         - name: kafka-logger
-# #           enable: true
-# #           config:
-# #             broker_list:
-# #               - "kafka.kafka-dev.svc.cluster.local:9092"
-# #             kafka_topic: "apisix-logs"
-# #             timeout: 3000
-# #             max_retry_count: 3
-# #             batch_max_size: 50
-# #             inactive_timeout: 5
-# #             include_req_body: true
-# #             include_resp_body: false
