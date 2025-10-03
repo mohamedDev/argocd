@@ -32,6 +32,36 @@ spec:
   type:
     ClusterIP
 ---
+ # Route utilisant la configuration réutilisable
+apiVersion: apisix.apache.org/v2
+kind: ApisixRoute
+metadata:
+  name: route-using-plugin-config
+spec:
+  http:
+    - name: demo-http
+      match:
+        hosts:
+          - nginx.local
+        paths:
+          - /
+      backend:
+        serviceName: nginx-service
+        servicePort: 80
+      plugins:
+        - name: kafka-logger
+          enable: true
+          config:
+            broker_list:
+              - "kafka.kafka-dev.svc.cluster.local:9092"
+            kafka_topic: "apisix-logs"
+            timeout: 3000
+            max_retry_count: 3
+            batch_max_size: 50
+            inactive_timeout: 5
+            include_req_body: true
+            include_resp_body: false
+
 # apiVersion: networking.k8s.io/v1
 # kind: Ingress
 # metadata:
@@ -49,24 +79,24 @@ spec:
 #                 name: nginx-service
 #                 port:
 #                   number: 80
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: ingress-nginx
-spec:
-  ingressClassName: apisix
-  rules:
-    - host: nginx.local
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: nginx-service
-                port:
-                  number: 80
+# ---
+# apiVersion: networking.k8s.io/v1
+# kind: Ingress
+# metadata:
+#   name: ingress-nginx
+# spec:
+#   ingressClassName: apisix
+#   rules:
+#     - host: nginx.local
+#       http:
+#         paths:
+#           - path: /
+#             pathType: Prefix
+#             backend:
+#               service:
+#                 name: nginx-service
+#                 port:
+#                   number: 80
 
 # ---
 # apiVersion: apisix.apache.org/v2
