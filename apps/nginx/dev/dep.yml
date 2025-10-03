@@ -54,7 +54,7 @@ spec:
           enable: true
           config:
             brokers:
-              - host: kafka.kafka-dev.svc.cluster.local
+              - host: kafka-service.kafka-dev.svc.cluster.local
                 port: 9092
             kafka_topic: apisix-logs
             key: request-log
