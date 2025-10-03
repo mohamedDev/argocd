@@ -55,24 +55,10 @@ spec:
           config:
             broker_list:
               default:
-                host: "kafka.kafka-dev.svc.cluster.local"
+                host: kafka.kafka-dev.svc.cluster.local
                 port: 9092
-                # sasl_config:  # décommente si SASL
-                #   mechanism: "PLAIN"
-                #   user: "username"
-                #   password: "password"
-            kafka_topic: "apisix-logs"
-            key: "request-log"
-            timeout: 3000
-            max_retry_count: 3
-            retry_delay: 1
-            required_acks: 1
-            batch_max_size: 50
-            inactive_timeout: 5
-            buffer_duration: 60
-            include_req_body: true
-            include_resp_body: false
-            meta_format: "default"
+            kafka_topic: apisix-logs
+            key: request-log
 # apiVersion: networking.k8s.io/v1
 # kind: Ingress
 # metadata:
