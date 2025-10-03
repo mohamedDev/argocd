@@ -52,7 +52,9 @@ spec:
           enable: true
           config:
             broker_list:
-              - "kafka.kafka-dev.svc.cluster.local:9092"
+              kafka-broker-1: # Clé = nom du broker
+                host: "kafka.kafka-dev.svc.cluster.local"
+                port: 9092
             kafka_topic: "apisix-logs"
             timeout: 3000
             max_retry_count: 3
@@ -60,6 +62,10 @@ spec:
             inactive_timeout: 5
             include_req_body: true
             include_resp_body: false
+            # Configuration du producer Kafka
+            producer_config:
+              max_in_flight_requests_per_connection: 1
+              required_acks: 1
 # apiVersion: networking.k8s.io/v1
 # kind: Ingress
 # metadata:
