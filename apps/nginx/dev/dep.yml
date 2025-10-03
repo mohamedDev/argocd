@@ -50,30 +50,29 @@ spec:
           servicePort: 80
           weight: 100
       plugins:
-        - name: kafka-logger
-          enable: true
-          config:
-            broker_list:
-              1:
-                host: "kafka.kafka-dev.svc.cluster.local"
-                port: 9092
-                # Décommenter si SASL activé
-                # sasl_config:
-                #   mechanism: "PLAIN"
-                #   user: "username"
-                #   password: "password"
-            kafka_topic: "apisix-logs"
-            key: "request-log"
-            timeout: 3000
-            max_retry_count: 3
-            retry_delay: 1
-            required_acks: 1  # 0=no ack, 1=leader ack, -1=all replicas
-            batch_max_size: 50
-            inactive_timeout: 5
-            buffer_duration: 60
-            include_req_body: true
-            include_resp_body: false
-            meta_format: "default"
+plugins:
+  - name: kafka-logger
+    enable: true
+    config:
+      broker_list:
+        - host: "kafka.kafka-dev.svc.cluster.local"
+          port: 9092
+          # sasl_config: # only if SASL is enabled
+          #   mechanism: "PLAIN"
+          #   user: "username"
+          #   password: "password"
+      kafka_topic: "apisix-logs"
+      key: "request-log"
+      timeout: 3000
+      max_retry_count: 3
+      retry_delay: 1
+      required_acks: 1
+      batch_max_size: 50
+      inactive_timeout: 5
+      buffer_duration: 60
+      include_req_body: true
+      include_resp_body: false
+      meta_format: "default"
 # apiVersion: networking.k8s.io/v1
 # kind: Ingress
 # metadata:
