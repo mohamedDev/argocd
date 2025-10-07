@@ -4,7 +4,7 @@ replicaCount: 2
 
 image:
   repository: apache/apisix
-  tag: "3.13.0-ubuntu"   # dernière version stable du chart officiel
+  tag: "3.13.0-ubuntu" # dernière version stable du chart officiel
   pullPolicy: IfNotPresent
 
 # Service configuration
@@ -43,7 +43,7 @@ autoscaling:
 # etcd embarqué (éviter en prod GKE, privilégier un etcd externe ou Cloud Spanner/Cloud SQL)
 etcd:
   enabled: true
-  replicaCount: 1  # Réduire à 1 pour local-path
+  replicaCount: 1 # Réduire à 1 pour local-path
   persistence:
     enabled: true
     storageClass: "local-path"
@@ -51,6 +51,10 @@ etcd:
 
 # APISIX core config
 apisix:
+  podAnnotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "9091"
+    prometheus.io/path: "/apisix/prometheus/metrics"
   enableHTTP2: true
   enableIPv6: false
 
@@ -68,11 +72,11 @@ apisix:
     credentials:
       admin: "changeme-admin-key"
       viewer: "changeme-viewer-key"
-      secretName: ""   # tu peux mettre un secret GKE si tu veux externaliser les clés
+      secretName: "" # tu peux mettre un secret GKE si tu veux externaliser les clés
     allow:
       ipList:
-        - 10.0.0.0/8     # CIDR interne GKE
-        - 127.0.0.1/24   # localhost
+        - 10.0.0.0/8 # CIDR interne GKE
+        - 127.0.0.1/24 # localhost
 
   plugins:
     - api-breaker
