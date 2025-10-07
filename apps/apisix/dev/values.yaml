@@ -71,7 +71,8 @@ apisix:
       viewer: "changeme-viewer-key"
       secretName: "" # tu peux mettre un secret GKE si tu veux externaliser les clés
     allow:
-      ipList: 0.0.0.0/0
+      ipList:
+        - "0.0.0.0/0"
 
   plugins:
     - api-breaker
