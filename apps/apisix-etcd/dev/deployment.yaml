@@ -17,7 +17,7 @@ spec:
       storage: 1Gi
   # Si vous avez un StorageClass spécifique, remplacez '' par son nom.
   # Pour Rancher Desktop/K3s, laisser vide utilise la classe par défaut (souvent 'local-path').
-  storageClassName: "" 
+  storageClassName: "local-path"
 ---
 # 2. Déploiement d'etcd (Standalone)
 apiVersion: apps/v1
@@ -37,37 +37,37 @@ spec:
         app: etcd-standalone
     spec:
       containers:
-      - name: etcd
-        # Utilisation de l'image officielle Bitnami (version récente)
-        image: bitnami/etcd:latest
-        imagePullPolicy: IfNotPresent
-        env:
-          # Configuration minimale pour un etcd standalone
-          - name: ALLOW_NONE_AUTHENTICATION
-            value: "yes" # ATTENTION: Ceci désactive l'authentification pour la simplicité. À ne pas utiliser en production!
-          - name: ETCD_ADVERTISE_CLIENT_URLS
-            value: http://etcd-service:2379
-          - name: ETCD_LISTEN_CLIENT_URLS
-            value: http://0.0.0.0:2379
-          # Configuration pour le mode standalone
-          - name: ETCD_INITIAL_CLUSTER_TOKEN
-            value: etcd-cluster-1
-          - name: ETCD_INITIAL_CLUSTER_STATE
-            value: new
-          - name: ETCD_INITIAL_CLUSTER
-            value: etcd-standalone=http://etcd-standalone:2380
-          - name: ETCD_INITIAL_ADVERTISE_PEER_URLS
-            value: http://etcd-standalone:2380
-          - name: ETCD_LISTEN_PEER_URLS
-            value: http://0.0.0.0:2380
-        ports:
-        - containerPort: 2379 # Port client
-          name: client
-        - containerPort: 2380 # Port peer
-          name: peer
-        volumeMounts:
-          - name: etcd-storage
-            mountPath: /bitnami/etcd/data
+        - name: etcd
+          # Utilisation de l'image officielle Bitnami (version récente)
+          image: bitnami/etcd:latest
+          imagePullPolicy: IfNotPresent
+          env:
+            # Configuration minimale pour un etcd standalone
+            - name: ALLOW_NONE_AUTHENTICATION
+              value: "yes" # ATTENTION: Ceci désactive l'authentification pour la simplicité. À ne pas utiliser en production!
+            - name: ETCD_ADVERTISE_CLIENT_URLS
+              value: http://etcd-service:2379
+            - name: ETCD_LISTEN_CLIENT_URLS
+              value: http://0.0.0.0:2379
+            # Configuration pour le mode standalone
+            - name: ETCD_INITIAL_CLUSTER_TOKEN
+              value: etcd-cluster-1
+            - name: ETCD_INITIAL_CLUSTER_STATE
+              value: new
+            - name: ETCD_INITIAL_CLUSTER
+              value: etcd-standalone=http://etcd-standalone:2380
+            - name: ETCD_INITIAL_ADVERTISE_PEER_URLS
+              value: http://etcd-standalone:2380
+            - name: ETCD_LISTEN_PEER_URLS
+              value: http://0.0.0.0:2380
+          ports:
+            - containerPort: 2379 # Port client
+              name: client
+            - containerPort: 2380 # Port peer
+              name: peer
+          volumeMounts:
+            - name: etcd-storage
+              mountPath: /bitnami/etcd/data
       volumes:
         - name: etcd-storage
           persistentVolumeClaim:
@@ -82,7 +82,7 @@ metadata:
     app: etcd-standalone
 spec:
   # ClusterIP est suffisant car seul Adminer y accède dans le cluster
-  type: ClusterIP 
+  type: ClusterIP
   selector:
     app: etcd-standalone
   ports:
@@ -109,13 +109,13 @@ spec:
         app: adminer
     spec:
       containers:
-      - name: adminer
-        # Image officielle Adminer
-        image: adminer:latest
-        imagePullPolicy: IfNotPresent
-        ports:
-        - containerPort: 8080
-          name: http
+        - name: adminer
+          # Image officielle Adminer
+          image: adminer:latest
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+              name: http
 ---
 # 5. Service pour Adminer (NodePort pour l'accès externe)
 apiVersion: v1
@@ -127,7 +127,7 @@ metadata:
 spec:
   # NodePort expose le service sur un port du nœud, accessible depuis l'extérieur.
   # C'est la méthode la plus simple pour les environnements locaux comme Rancher Desktop.
-  type: NodePort 
+  type: NodePort
   selector:
     app: adminer
   ports:
