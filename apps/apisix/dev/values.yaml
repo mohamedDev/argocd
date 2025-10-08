@@ -40,14 +40,28 @@ autoscaling:
   maxReplicas: 3
   targetCPUUtilizationPercentage: 70
 
+externalEtcd:
+  # The host now uses the Fully Qualified Domain Name (FQDN):
+  # [service-name].[namespace].svc.cluster.local
+  host:
+    - http://etcd-service.apisix-etcd-dev.svc.cluster.local:2379
+
+  # Since your etcd deployment has ALLOW_NONE_AUTHENTICATION set to "yes", 
+  # we set the user and password fields to empty strings to disable authentication.
+  user: ""
+  password: ""
+
+  # We keep these empty as no secret is involved for authentication.
+  existingSecret: ""
+  secretPasswordKey: "etcd-root-password"
 # etcd embarqué (éviter en prod GKE, privilégier un etcd externe ou Cloud Spanner/Cloud SQL)
 etcd:
-  enabled: true
-  replicaCount: 1 # Réduire à 1 pour local-path
-  persistence:
-    enabled: true
-    storageClass: "local-path"
-    size: 8Gi
+  enabled: false
+  # replicaCount: 1 # Réduire à 1 pour local-path
+  # persistence:
+  #   enabled: true
+  #   storageClass: "local-path"
+  #   size: 8Gi
 
 # APISIX core config
 apisix:
