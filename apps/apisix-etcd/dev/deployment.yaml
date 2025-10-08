@@ -39,7 +39,7 @@ spec:
       containers:
         - name: etcd
           # Utilisation de l'image officielle Bitnami (version récente)
-          image: bitnami/etcd:latest
+          image: bitnamilegacy/etcd:3.6.4-debian-12-r4
           imagePullPolicy: IfNotPresent
           env:
             # Configuration minimale pour un etcd standalone
