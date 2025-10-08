@@ -94,48 +94,44 @@ spec:
       protocol: TCP
       name: client
 ---
-# 4. Déploiement d'Adminer
+# 6. Déploiement d'etcdkeeper (Web UI pour etcd)
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: adminer
+  name: etcdkeeper
   labels:
-    app: adminer
+    app: etcdkeeper
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: adminer
+      app: etcdkeeper
   template:
     metadata:
       labels:
-        app: adminer
+        app: etcdkeeper
     spec:
       containers:
-        - name: adminer
-          # Image officielle Adminer
-          image: adminer:latest
-          imagePullPolicy: IfNotPresent
+        - name: etcdkeeper
+          # Image d'une interface web simple pour etcd
+          image: lihuaiming/etcdkeeper:latest
           ports:
             - containerPort: 8080
-              name: http
 ---
-# 5. Service pour Adminer (NodePort pour l'accès externe)
+# 7. Service pour etcdkeeper (NodePort pour l'accès externe)
 apiVersion: v1
 kind: Service
 metadata:
-  name: adminer-service-nodeport
+  name: etcdkeeper-service-nodeport
   labels:
-    app: adminer
+    app: etcdkeeper
 spec:
-  # NodePort expose le service sur un port du nœud, accessible depuis l'extérieur.
-  # C'est la méthode la plus simple pour les environnements locaux comme Rancher Desktop.
   type: NodePort
   selector:
-    app: adminer
+    app: etcdkeeper
   ports:
     - port: 8080
-      targetPort: http
+      targetPort: 8080
       nodePort: 30066
       # NodePort choisi automatiquement par Kubernetes (entre 30000-32767)
       # Laissez vide pour un choix automatique ou spécifiez un port > 30000
