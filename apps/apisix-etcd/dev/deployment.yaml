@@ -42,9 +42,12 @@ spec:
           image: bitnamilegacy/etcd:3.6.4-debian-12-r4
           imagePullPolicy: IfNotPresent
           env:
-            # Configuration minimale pour un etcd standalone
             - name: ALLOW_NONE_AUTHENTICATION
-              value: "yes" # ATTENTION: Ceci désactive l'authentification pour la simplicité. À ne pas utiliser en production!
+              value: "yes"
+            # 💡 AJOUT : Définir explicitement le nom du nœud/membre
+            - name: ETCD_NAME
+              value: etcd-standalone
+            # Cette valeur doit correspondre au nom du membre dans ETCD_INITIAL_CLUSTER (avant le '=')
             - name: ETCD_ADVERTISE_CLIENT_URLS
               value: http://etcd-service:2379
             - name: ETCD_LISTEN_CLIENT_URLS
