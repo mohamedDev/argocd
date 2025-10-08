@@ -1,0 +1,30 @@
+name: Test GITHUB_REF_NAME
+
+on:
+  workflow_dispatch:
+    inputs:
+      test_message:
+        description: 'Message de test optionnel'
+        required: false
+        default: 'Test des variables Git'
+
+jobs:
+  test-ref-name:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout du code
+        uses: actions/checkout@v4
+      
+      - name: Afficher toutes les variables de référence
+        run: |
+          echo "=== Variables de référence Git ==="
+          echo "GITHUB_REF: ${{ github.ref }}"
+          echo "GITHUB_REF_NAME: ${{ github.ref_name }}"
+          echo "GITHUB_REF_TYPE: ${{ github.ref_type }}"
+          echo "GITHUB_SHA: ${{ github.sha }}"
+          echo ""
+          echo "=== Variables avec \$GITHUB_* ==="
+          echo "GITHUB_REF (env): $GITHUB_REF"
+          echo "GITHUB_REF_NAME (env): $GITHUB_REF_NAME"
+          echo "GITHUB_REF_TYPE (env): $GITHUB_REF_TYPE"
