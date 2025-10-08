@@ -136,5 +136,6 @@ spec:
   ports:
     - port: 8080
       targetPort: http
+      nodePort: 30066
       # NodePort choisi automatiquement par Kubernetes (entre 30000-32767)
       # Laissez vide pour un choix automatique ou spécifiez un port > 30000
