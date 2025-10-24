@@ -61,3 +61,17 @@ spec:
           enable: true
           config:
             prefer_name: true
+        - name: elasticsearch-logger
+          enable: true
+          config:
+            endpoint_addr: "http://elasticsearch.my-elasticsearch-prod.svc.cluster.local:9200"
+            field:
+              index: "apisix-logs"
+            timeout: 10
+            batch_max_size: 100
+            inactive_timeout: 5
+            buffer_duration: 60
+            max_retry_count: 3
+            retry_delay: 1
+            include_req_body: false
+            include_resp_body: false
