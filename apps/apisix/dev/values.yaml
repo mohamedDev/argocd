@@ -134,6 +134,7 @@ apisix:
     - server-info
     - traffic-split
     - kafka-logger
+    - elasticsearch-logger
 
 # Monitoring
 metrics:
