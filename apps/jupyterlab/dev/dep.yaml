@@ -1,0 +1,74 @@
+# PersistentVolumeClaim pour sauvegarder les notebooks
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: jupyterlab-pvc
+
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+# Deployment JupyterLab
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jupyterlab
+
+  labels:
+    app: jupyterlab
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jupyterlab
+  template:
+    metadata:
+      labels:
+        app: jupyterlab
+    spec:
+      containers:
+        - name: jupyterlab
+          image: jupyter/scipy-notebook:latest
+          ports:
+            - containerPort: 8888
+              name: jupyter
+          env:
+            - name: JUPYTER_ENABLE_LAB
+              value: "yes"
+            - name: JUPYTER_TOKEN
+              value: "montoken123" # Changez ce token !
+          volumeMounts:
+            - name: jupyter-data
+              mountPath: /home/jovyan/work
+          resources:
+            requests:
+              memory: "512Mi"
+              cpu: "500m"
+            limits:
+              memory: "2Gi"
+              cpu: "2000m"
+      volumes:
+        - name: jupyter-data
+          persistentVolumeClaim:
+            claimName: jupyterlab-pvc
+
+---
+# Service pour exposer JupyterLab
+apiVersion: v1
+kind: Service
+metadata:
+  name: jupyterlab-service
+
+spec:
+  type: NodePort
+  selector:
+    app: jupyterlab
+  ports:
+    - protocol: TCP
+      port: 8888
+      targetPort: 8888
+      nodePort: 30888 # Port accessible sur votre machine locale
