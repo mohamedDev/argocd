@@ -17,7 +17,7 @@ spec:
       storage: 1Gi
   # Si vous avez un StorageClass spécifique, remplacez '' par son nom.
   # Pour Rancher Desktop/K3s, laisser vide utilise la classe par défaut (souvent 'local-path').
-  storageClassName: "local-path"
+  storageClassName: "standard"
 ---
 # 2. Déploiement d'etcd (Standalone)
 apiVersion: apps/v1
