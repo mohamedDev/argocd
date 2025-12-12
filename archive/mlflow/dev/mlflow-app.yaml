@@ -1,0 +1,23 @@
+# apiVersion: argoproj.io/v1alpha1
+# kind: Application
+# metadata:
+#   name: mlflow-app
+#   namespace: argocd
+# spec:
+#   project: default
+#   source:
+#     repoURL: 'https://github.com/mohamedDev/argocd.git'
+#     targetRevision: HEAD
+#     path: charts/mlflow
+#     helm:
+#       valueFiles:
+#         - ../../apps/mlflow/dev/values.yaml
+#   destination:
+#     server: 'https://kubernetes.default.svc'
+#     namespace: mlflow-dev    # 👈 le namespace cible
+#   syncPolicy:
+#     automated:
+#       prune: true
+#       selfHeal: true
+#     syncOptions:
+#       - CreateNamespace=true     # 👈 ArgoCD créera le namespace si absent
